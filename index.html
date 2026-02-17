@@ -1,1 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>筆算クエスト - HTML版</title>
+    <style>
+        :root {
+            --cell-size: 50px;
+            --primary-color: #4CAF50;
+            --error-color: #FF5252;
+            --border-color: #333;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f4f8;
+            padding: 20px;
+        }
+
+        h1 { color: #333; }
+        
+        /* ガイドメッセージ */
+        #message-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-weight: bold;
+            min-height: 1.5em;
+            text-align: center;
+            width: 300px;
+        }
+
+        /* 筆算のグリッドレイアウト */
+        .hissan-grid {
+            display: grid;
+            grid-template-columns: repeat(4, var(--cell-size)); /* 4列 */
+            gap: 2px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* 筆算特有の罫線デザイン */
+        .border-bottom { border-bottom: 2px solid var(--border-color); }
+        .border-right { border-right: 2px solid var(--border-color); }
+        /* 割り算のカーブ（⟌）の表現 */
+        .bracket {
+            border-top: 2px solid var(--border-color);
+            border-left: 2px solid var(--border-color);
+            border-top-left-radius: 10px; /* 少し丸くする */
+            margin-top: 10px; /* 位置調整 */
+            height: calc(var(--cell-size) - 10px);
+        }
+
+        /* 入力ボックスのデザイン */
+        input.cell-input {
+            width: 90%;
+            height: 90%;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            background: white;
+            color: #333;
+        }
+
+        /* 入力状態のスタイル */
+        input.cell-input:focus {
+            border-color: #2196F3;
+            background: #E3F2FD;
+        }
+        
+        /* 正解時のスタイル */
+        input.correct {
+            background-color: #C8E6C9;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* 不正解時のアニメーション */
+        .shake {
+            animation: shake 0.5s;
+            border-color: var(--error-color) !important;
+            background-color: #FFEBEE !important;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* ボタン */
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>筆算クエスト：74 ÷ 3</h1>
+
+    <div id="message-box">さあ、まずは十の位の商を立てよう！</div>
+
+    <div class="hissan-grid">
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-0" data-ans="2"></div>
+        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-4" data-ans="4" disabled></div>
+
+        <div class="cell">3</div>
+        <div class="cell bracket"></div> <div class="cell border-bottom">7</div>
+        <div class="cell border-bottom">4</div>
+
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell border-bottom"><input type="tel" maxlength="1" class="cell-input" id="inp-1" data-ans="6" disabled></div>
+        <div class="cell"></div>
+
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-2" data-ans="1" disabled></div>
+        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-3" data-ans="4" disabled></div>
+
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell border-bottom"><input type="tel" maxlength="1" class="cell-input" id="inp-5" data-ans="1" disabled></div>
+        <div class="cell border-bottom"><input type="tel" maxlength="1" class="cell-input" id="inp-6" data-ans="2" disabled></div>
+
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-7" data-ans="2" disabled></div>
+    </div>
+
+    <button onclick="resetGame()">もう一度はじめから</button>
+
+    <script>
+        // 正解ステップの管理（入力ID順）
+        const steps = [
+            { id: 'inp-0', msg: "7の中に3はいくつ入る？（たてる）" },
+            { id: 'inp-1', msg: "3 × 2 は？（かける）" },
+            { id: 'inp-2', msg: "7 - 6 は？（ひく）" },
+            { id: 'inp-3', msg: "となりの 4 をおろしてこよう！（おろす）" },
+            { id: 'inp-4', msg: "14の中に3はいくつ入る？（たてる）" },
+            { id: 'inp-5', msg: "3 × 4 の十の位は？（かける）" },
+            { id: 'inp-6', msg: "3 × 4 の一の位は？（かける）" },
+            { id: 'inp-7', msg: "14 - 12 は？（ひく）" }
+        ];
+
+        let currentStepIndex = 0;
+        const msgBox = document.getElementById('message-box');
+
+        // すべての入力欄にイベントリスナーを設定
+        document.querySelectorAll('.cell-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                checkAnswer(e.target);
+            });
+        });
+
+        function checkAnswer(inputElement) {
+            const userAnswer = inputElement.value;
+            const correctAnswer = inputElement.dataset.ans;
+
+            // 空白なら何もしない
+            if (!userAnswer) return;
+
+            if (userAnswer === correctAnswer) {
+                // 正解の処理
+                inputElement.classList.add('correct');
+                inputElement.disabled = true; // 入力をロック
+                
+                // 次のステップへ
+                currentStepIndex++;
+                
+                if (currentStepIndex < steps.length) {
+                    activateStep(currentStepIndex);
+                } else {
+                    msgBox.innerHTML = "🎉 クリア！おめでとう！ 🎉";
+                    msgBox.style.color = "#4CAF50";
+                }
+
+            } else {
+                // 不正解の処理
+                inputElement.classList.add('shake');
+                msgBox.textContent = "おっと、ちがうみたいだよ。";
+                
+                // アニメーション後にクラスを削除して再入力可能に
+                setTimeout(() => {
+                    inputElement.classList.remove('shake');
+                    inputElement.value = '';
+                    inputElement.focus();
+                }, 500);
+            }
+        }
+
+        function activateStep(index) {
+            const step = steps[index];
+            const nextInput = document.getElementById(step.id);
+            
+            // 入力を有効化
+            nextInput.disabled = false;
+            nextInput.focus();
+            
+            // メッセージ更新
+            msgBox.textContent = step.msg;
+        }
+
+        function resetGame() {
+            currentStepIndex = 0;
+            msgBox.style.color = "#333";
+            document.querySelectorAll('.cell-input').forEach(input => {
+                input.value = '';
+                input.classList.remove('correct');
+                input.disabled = true;
+            });
+            // 最初のステップを開始
+            activateStep(0);
+        }
+
+        // 初期化実行
+        resetGame();
+
+    </script>
+</body>
+</html>
 
