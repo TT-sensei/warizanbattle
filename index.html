@@ -2,250 +2,494 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>筆算クエスト - HTML版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>筆算クエスト 〜わり算の城〜</title>
     <style>
         :root {
-            --cell-size: 50px;
-            --primary-color: #4CAF50;
-            --error-color: #FF5252;
-            --border-color: #333;
+            --bg-color: #2c3e50;
+            --ui-bg: #34495e;
+            --accent: #f1c40f;
+            --text: #ecf0f1;
+            --damage: #e74c3c;
+            --grid-line: #7f8c8d;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- バトル画面（上部） --- */
+        .battle-scene {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f0f4f8;
-            padding: 20px;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(to bottom, #2980b9, #2c3e50);
+            padding: 10px;
         }
 
-        h1 { color: #333; }
-        
-        /* ガイドメッセージ */
-        #message-box {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-weight: bold;
-            min-height: 1.5em;
+        .monster-container {
+            position: relative;
             text-align: center;
-            width: 300px;
         }
 
-        /* 筆算のグリッドレイアウト */
+        .monster {
+            font-size: 80px;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+            transition: transform 0.2s;
+        }
+
+        .hp-bar-frame {
+            width: 200px;
+            height: 20px;
+            background: #555;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #fff;
+            margin-top: 10px;
+        }
+
+        .hp-bar {
+            width: 100%;
+            height: 100%;
+            background: #2ecc71;
+            transition: width 0.5s ease-out;
+        }
+
+        /* ダメージエフェクト */
+        .damage-text {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--damage);
+            font-size: 40px;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .damage-anim {
+            animation: floatUp 0.8s ease-out;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -100px) scale(1.5); }
+        }
+
+        /* --- コマンドインジケーター --- */
+        .command-bar {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            padding: 5px;
+            background: #000;
+        }
+
+        .cmd-step {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 15px;
+            background: #555;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .cmd-step.active {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 10px var(--accent);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- 筆算ノート（中部） --- */
+        .notebook-area {
+            flex: 2;
+            background: #ecf0f1;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border-top: 5px solid #bdc3c7;
+            padding: 20px 0;
+        }
+
         .hissan-grid {
             display: grid;
-            grid-template-columns: repeat(4, var(--cell-size)); /* 4列 */
-            gap: 2px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .cell {
-            width: var(--cell-size);
-            height: var(--cell-size);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            grid-template-columns: repeat(4, 50px);
+            grid-auto-rows: 50px;
             position: relative;
         }
 
-        /* 筆算特有の罫線デザイン */
-        .border-bottom { border-bottom: 2px solid var(--border-color); }
-        .border-right { border-right: 2px solid var(--border-color); }
-        /* 割り算のカーブ（⟌）の表現 */
-        .bracket {
-            border-top: 2px solid var(--border-color);
-            border-left: 2px solid var(--border-color);
-            border-top-left-radius: 10px; /* 少し丸くする */
-            margin-top: 10px; /* 位置調整 */
-            height: calc(var(--cell-size) - 10px);
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            position: relative;
         }
 
-        /* 入力ボックスのデザイン */
-        input.cell-input {
-            width: 90%;
-            height: 90%;
-            font-size: 24px;
+        /* 罫線 */
+        .border-bottom { border-bottom: 2px solid #333; }
+        .bracket { 
+            border-left: 2px solid #333;
+            border-top: 2px solid #333;
+            border-top-left-radius: 10px;
+            margin-top: 15px;
+            height: 35px;
+        }
+
+        /* 入力セル */
+        .input-box {
+            width: 40px;
+            height: 40px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
             text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            outline: none;
+            font-size: 28px;
             background: white;
-            color: #333;
+            color: transparent; /* 入力値はJSで制御して表示 */
+            caret-color: transparent;
         }
 
-        /* 入力状態のスタイル */
-        input.cell-input:focus {
-            border-color: #2196F3;
-            background: #E3F2FD;
-        }
-        
-        /* 正解時のスタイル */
-        input.correct {
-            background-color: #C8E6C9;
-            border-color: var(--primary-color);
-            color: var(--primary-color);
+        .input-box.active {
+            border: 3px solid var(--accent);
+            background: #fff9c4;
+            box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
         }
 
-        /* 不正解時のアニメーション */
-        .shake {
-            animation: shake 0.5s;
-            border-color: var(--error-color) !important;
-            background-color: #FFEBEE !important;
+        .input-box.correct {
+            border: 2px solid #2ecc71;
+            background: #e8f8f5;
+            color: #2ecc71;
         }
 
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-            100% { transform: translateX(0); }
+        /* 矢印アニメーション用 */
+        .arrow-down {
+            position: absolute;
+            color: var(--accent);
+            font-size: 30px;
+            top: -30px;
+            opacity: 0;
+            transition: all 0.5s;
+        }
+        .arrow-active {
+            top: 10px;
+            opacity: 1;
         }
 
-        /* ボタン */
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: var(--primary-color);
-            color: white;
+        /* --- コントローラー（下部） --- */
+        .controls {
+            background: var(--ui-bg);
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .btn {
+            background: #fff;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
+            height: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 0 #bdc3c7;
+            active: translateY(4px);
+            cursor: pointer;
         }
+        .btn:active { box-shadow: none; transform: translateY(4px); }
+
+        .btn-msg {
+            grid-column: span 5;
+            background: transparent;
+            color: white;
+            font-size: 16px;
+            height: 30px;
+            box-shadow: none;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        /* さくらんぼ計算帳（ポップアップ） */
+        .scratch-pad {
+            position: absolute;
+            bottom: 150px;
+            right: 10px;
+            width: 150px;
+            height: 120px;
+            background: #fff;
+            border: 4px solid #f39c12;
+            border-radius: 10px;
+            display: none;
+            flex-direction: column;
+            padding: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .scratch-header { font-size: 12px; background: #f39c12; color: white; padding: 2px; text-align: center;}
+        .scratch-area { flex: 1; border: none; resize: none; font-size: 20px; }
+
+        .scratch-toggle {
+            position: absolute;
+            bottom: 240px;
+            right: 10px;
+            background: #f39c12;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>筆算クエスト：74 ÷ 3</h1>
-
-    <div id="message-box">さあ、まずは十の位の商を立てよう！</div>
-
-    <div class="hissan-grid">
-        <div class="cell"></div>
-        <div class="cell"></div>
-        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-0" data-ans="2"></div>
-        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-4" data-ans="4" disabled></div>
-
-        <div class="cell">3</div>
-        <div class="cell bracket"></div> <div class="cell border-bottom">7</div>
-        <div class="cell border-bottom">4</div>
-
-        <div class="cell"></div>
-        <div class="cell"></div>
-        <div class="cell border-bottom"><input type="tel" maxlength="1" class="cell-input" id="inp-1" data-ans="6" disabled></div>
-        <div class="cell"></div>
-
-        <div class="cell"></div>
-        <div class="cell"></div>
-        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-2" data-ans="1" disabled></div>
-        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-3" data-ans="4" disabled></div>
-
-        <div class="cell"></div>
-        <div class="cell"></div>
-        <div class="cell border-bottom"><input type="tel" maxlength="1" class="cell-input" id="inp-5" data-ans="1" disabled></div>
-        <div class="cell border-bottom"><input type="tel" maxlength="1" class="cell-input" id="inp-6" data-ans="2" disabled></div>
-
-        <div class="cell"></div>
-        <div class="cell"></div>
-        <div class="cell"></div>
-        <div class="cell"><input type="tel" maxlength="1" class="cell-input" id="inp-7" data-ans="2" disabled></div>
+    <div class="battle-scene">
+        <div class="monster-container">
+            <div id="monster" class="monster">👿</div> <div class="damage-text" id="damage-effect">-10</div>
+        </div>
+        <div class="hp-bar-frame">
+            <div id="hp-bar" class="hp-bar"></div>
+        </div>
+        <div style="margin-top:5px; font-size:12px; opacity:0.8;">ワル・ゴブリン (HP: 86)</div>
     </div>
 
-    <button onclick="resetGame()">もう一度はじめから</button>
+    <div class="command-bar">
+        <div id="cmd-tateru" class="cmd-step">立てる</div>
+        <div id="cmd-kakeru" class="cmd-step">掛ける</div>
+        <div id="cmd-hiku" class="cmd-step">引く</div>
+        <div id="cmd-orosu" class="cmd-step">下ろす</div>
+    </div>
+
+    <div class="notebook-area">
+        <div class="hissan-grid" id="grid-container">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"><div id="cell-ans-10" class="input-box"></div></div>
+            <div class="cell"><div id="cell-ans-1" class="input-box"></div></div>
+
+            <div class="cell">3</div>
+            <div class="cell bracket"></div>
+            <div class="cell border-bottom">8</div>
+            <div class="cell border-bottom">6</div>
+
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell border-bottom"><div id="cell-mul-1" class="input-box"></div></div>
+            <div class="cell"></div>
+
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"><div id="cell-sub-1" class="input-box"></div></div>
+            <div class="cell">
+                <div id="arrow-anim" class="arrow-down">↓</div>
+                <div id="cell-down-1" class="input-box"></div>
+            </div>
+
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell border-bottom"><div id="cell-mul-2-10" class="input-box"></div></div>
+            <div class="cell border-bottom"><div id="cell-mul-2-1" class="input-box"></div></div>
+
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"><div id="cell-rem" class="input-box"></div></div>
+
+        </div>
+
+        <div class="scratch-toggle" onclick="toggleScratch()">🍒</div>
+        <div class="scratch-pad" id="scratch-pad">
+            <div class="scratch-header">メモ帳</div>
+            <textarea class="scratch-area" placeholder="ここに計算してね"></textarea>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="btn-msg" id="msg-box">モンスターがあらわれた！</div>
+        <button class="btn" onclick="inputNum(1)">1</button>
+        <button class="btn" onclick="inputNum(2)">2</button>
+        <button class="btn" onclick="inputNum(3)">3</button>
+        <button class="btn" onclick="inputNum(4)">4</button>
+        <button class="btn" onclick="inputNum(5)">5</button>
+        <button class="btn" onclick="inputNum(6)">6</button>
+        <button class="btn" onclick="inputNum(7)">7</button>
+        <button class="btn" onclick="inputNum(8)">8</button>
+        <button class="btn" onclick="inputNum(9)">9</button>
+        <button class="btn" onclick="inputNum(0)">0</button>
+    </div>
 
     <script>
-        // 正解ステップの管理（入力ID順）
-        const steps = [
-            { id: 'inp-0', msg: "7の中に3はいくつ入る？（たてる）" },
-            { id: 'inp-1', msg: "3 × 2 は？（かける）" },
-            { id: 'inp-2', msg: "7 - 6 は？（ひく）" },
-            { id: 'inp-3', msg: "となりの 4 をおろしてこよう！（おろす）" },
-            { id: 'inp-4', msg: "14の中に3はいくつ入る？（たてる）" },
-            { id: 'inp-5', msg: "3 × 4 の十の位は？（かける）" },
-            { id: 'inp-6', msg: "3 × 4 の一の位は？（かける）" },
-            { id: 'inp-7', msg: "14 - 12 は？（ひく）" }
+        /* --- ゲームのロジック --- */
+        
+        // 問題: 86 ÷ 3 = 28 ... 2
+        const problem = {
+            dividend: 86,
+            divisor: 3,
+            quotient: 28,
+            remainder: 2
+        };
+
+        // ステップ定義 (シナリオ)
+        const scenario = [
+            // Phase 1: 10の位
+            { id: 'cell-ans-10', type: 'tateru', ans: 2, hint: '8 ÷ 3 は？', 
+              tooBigMsg: '3×3=9 だよ。8より大きくなっちゃう！' },
+            { id: 'cell-mul-1', type: 'kakeru', ans: 6, hint: '3 × 2 は？' },
+            { id: 'cell-sub-1', type: 'hiku', ans: 2, hint: '8 - 6 は？', 
+              checkRem: true }, // あまりチェックフラグ
+            
+            // Phase 2: おろす
+            { id: 'cell-down-1', type: 'orosu', ans: 6, hint: 'となりの数字をおろそう！' },
+
+            // Phase 3: 1の位
+            { id: 'cell-ans-1', type: 'tateru', ans: 8, hint: '26 ÷ 3 は？', 
+              tooBigMsg: '3×9=27 だよ。26より大きくなっちゃう！' },
+            
+            // かけ算 (2桁入力させる簡易実装として、1桁ずつ判定)
+            { id: 'cell-mul-2-10', type: 'kakeru', ans: 2, hint: '3 × 8 = 2...?' },
+            { id: 'cell-mul-2-1', type: 'kakeru', ans: 4, hint: '3 × 8 = 24！' },
+
+            // あまり
+            { id: 'cell-rem', type: 'hiku', ans: 2, hint: '26 - 24 は？' }
         ];
 
-        let currentStepIndex = 0;
-        const msgBox = document.getElementById('message-box');
+        let currentStepIdx = 0;
+        let hp = 100;
+        const maxHp = 100;
 
-        // すべての入力欄にイベントリスナーを設定
-        document.querySelectorAll('.cell-input').forEach(input => {
-            input.addEventListener('input', (e) => {
-                checkAnswer(e.target);
-            });
-        });
+        // 初期化
+        window.onload = function() {
+            updateStep();
+        };
 
-        function checkAnswer(inputElement) {
-            const userAnswer = inputElement.value;
-            const correctAnswer = inputElement.dataset.ans;
+        // ステップ更新処理
+        function updateStep() {
+            if (currentStepIdx >= scenario.length) {
+                gameClear();
+                return;
+            }
 
-            // 空白なら何もしない
-            if (!userAnswer) return;
+            const step = scenario[currentStepIdx];
+            
+            // コマンドバーの更新
+            document.querySelectorAll('.cmd-step').forEach(el => el.classList.remove('active'));
+            document.getElementById('cmd-' + step.type).classList.add('active');
 
-            if (userAnswer === correctAnswer) {
-                // 正解の処理
-                inputElement.classList.add('correct');
-                inputElement.disabled = true; // 入力をロック
-                
-                // 次のステップへ
-                currentStepIndex++;
-                
-                if (currentStepIndex < steps.length) {
-                    activateStep(currentStepIndex);
-                } else {
-                    msgBox.innerHTML = "🎉 クリア！おめでとう！ 🎉";
-                    msgBox.style.color = "#4CAF50";
-                }
+            // アクティブなセルのハイライト
+            document.querySelectorAll('.input-box').forEach(el => el.classList.remove('active'));
+            const activeCell = document.getElementById(step.id);
+            activeCell.classList.add('active');
 
+            // メッセージ更新
+            setMsg(step.hint);
+
+            // "下ろす"の特別演出
+            if (step.type === 'orosu') {
+                const arrow = document.getElementById('arrow-anim');
+                arrow.classList.add('arrow-active');
+                // 下ろすアニメーションのため、数字は自動で入る演出にしてもいいが、今回は入力させる
             } else {
-                // 不正解の処理
-                inputElement.classList.add('shake');
-                msgBox.textContent = "おっと、ちがうみたいだよ。";
-                
-                // アニメーション後にクラスを削除して再入力可能に
-                setTimeout(() => {
-                    inputElement.classList.remove('shake');
-                    inputElement.value = '';
-                    inputElement.focus();
-                }, 500);
+                document.getElementById('arrow-anim').classList.remove('arrow-active');
             }
         }
 
-        function activateStep(index) {
-            const step = steps[index];
-            const nextInput = document.getElementById(step.id);
+        // 数字入力処理
+        function inputNum(num) {
+            if (currentStepIdx >= scenario.length) return;
+
+            const step = scenario[currentStepIdx];
+            const activeCell = document.getElementById(step.id);
             
-            // 入力を有効化
-            nextInput.disabled = false;
-            nextInput.focus();
-            
-            // メッセージ更新
-            msgBox.textContent = step.msg;
+            // 正解判定
+            if (num === step.ans) {
+                // 正解！
+                activeCell.textContent = num;
+                activeCell.classList.remove('active');
+                activeCell.classList.add('correct');
+                
+                playAttack();
+                currentStepIdx++;
+                updateStep();
+
+            } else {
+                // 不正解
+                activeCell.style.animation = "shake 0.3s";
+                setTimeout(()=> activeCell.style.animation = "", 300);
+
+                // アドバイスロジック
+                if (step.type === 'tateru' && num > step.ans) {
+                    setMsg(step.tooBigMsg || "大きすぎるよ！");
+                } else if (step.type === 'tateru' && num < step.ans) {
+                    setMsg("もっと入りそうだよ！");
+                } else {
+                    setMsg("おしい！ちがう数字だよ。");
+                }
+            }
         }
 
-        function resetGame() {
-            currentStepIndex = 0;
-            msgBox.style.color = "#333";
-            document.querySelectorAll('.cell-input').forEach(input => {
-                input.value = '';
-                input.classList.remove('correct');
-                input.disabled = true;
-            });
-            // 最初のステップを開始
-            activateStep(0);
+        // 攻撃演出
+        function playAttack() {
+            // ダメージ計算と表示
+            const dmg = 15;
+            hp = Math.max(0, hp - dmg);
+            document.getElementById('hp-bar').style.width = hp + "%";
+
+            // ダメージポップアップ
+            const dmgTxt = document.getElementById('damage-effect');
+            dmgTxt.classList.remove('damage-anim');
+            void dmgTxt.offsetWidth; // リフロー
+            dmgTxt.classList.add('damage-anim');
+
+            // 敵の揺れ
+            const monster = document.getElementById('monster');
+            monster.style.transform = "translateX(5px)";
+            setTimeout(() => monster.style.transform = "translateX(-5px)", 50);
+            setTimeout(() => monster.style.transform = "translateX(0)", 100);
         }
 
-        // 初期化実行
-        resetGame();
+        function setMsg(text) {
+            document.getElementById('msg-box').textContent = text;
+        }
 
-    </script>
+        function toggleScratch() {
+            const pad = document.getElementById('scratch-pad');
+            pad.style.display = pad.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function gameClear() {
+            document.getElementById('monster').innerHTML = "😵";
+            document.getElementById('msg-box').innerHTML = "🎉 クリア！ 賢者レベルUP！";
+            document.getElementById('msg-box').style.color = "#f1c40f";
+            
+            // 花吹雪的な演出を入れるとさらに良い
+        }
+
+    </style>
 </body>
 </html>
-
