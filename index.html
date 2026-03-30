@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>筆算バトル - RPGエディション</title>
+    <title>筆算バトル - 基礎固めRPG</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -38,7 +38,7 @@
             background: radial-gradient(circle, #2c3e50 0%, #000 100%);
             text-align: center; padding: 20px;
         }
-        .title-logo { font-size: 40px; font-weight: bold; color: #f1c40f; text-shadow: 2px 2px 0 #d35400; margin-bottom: 20px; }
+        .title-logo { font-size: 36px; font-weight: bold; color: #f1c40f; text-shadow: 2px 2px 0 #d35400; margin-bottom: 20px; }
         .status-box { background: rgba(0,0,0,0.6); padding: 20px; border-radius: 15px; border: 2px solid #555; margin-bottom: 30px; width: 80%; max-width: 300px; }
         .player-title { color: #48dbfb; font-size: 20px; font-weight: bold; margin-bottom: 10px; }
         .exp-bar-bg { width: 100%; background: #333; height: 15px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
@@ -97,14 +97,14 @@
 <body>
 
     <div id="home-screen" class="screen active">
-        <div class="title-logo">筆算バトル<br><span style="font-size: 20px; color: white;">~ 伝説の勇者 ~</span></div>
+        <div class="title-logo">筆算バトル<br><span style="font-size: 18px; color: white;">〜めざせ！反復の鬼〜</span></div>
         <div class="status-box">
             <div id="display-title" class="player-title">みならい勇者</div>
             <div>プレイヤーLv: <span id="display-level">1</span></div>
             <div style="font-size: 12px; margin-top: 10px; text-align: left;">次のレベルまで</div>
             <div class="exp-bar-bg"><div id="display-exp" class="exp-bar-fill"></div></div>
         </div>
-        <button class="start-btn" onclick="startBattle()">バトルへ出発！</button>
+        <button class="start-btn" onclick="startBattle()">修行へ出発！</button>
     </div>
 
     <div id="battle-screen" class="screen">
@@ -153,7 +153,7 @@
 
     <div id="result-screen" class="screen">
         <div class="result-box">
-            <h2 style="color: #f1c40f;">バトル勝利！</h2>
+            <h2 style="color: #f1c40f;">修行クリア！</h2>
             <p>獲得経験値: <span id="res-exp" style="font-size:24px; font-weight:bold;">+20</span></p>
             <p>最大コンボ: <span id="res-combo"></span></p>
             <button class="start-btn" style="margin-top: 20px; font-size: 18px;" onclick="returnHome()">ホームへ戻る</button>
@@ -161,13 +161,14 @@
     </div>
 
     <script>
-        // --- プレイヤーデータ ---
+        // --- プレイヤーデータ (基礎特化の称号) ---
         let playerData = { exp: 0, level: 1, title: "みならい勇者" };
         const titles = [
             { lv: 1, name: "みならい勇者" },
-            { lv: 3, name: "わりざん戦士" },
-            { lv: 5, name: "筆算マスター" },
-            { lv: 10, name: "伝説の数学者" }
+            { lv: 3, name: "かけだしの計算手" },
+            { lv: 5, name: "基礎固め職人" },
+            { lv: 10, name: "反復の鬼" },
+            { lv: 15, name: "不動の筆算マスター" }
         ];
 
         // --- バトル状態 ---
@@ -176,17 +177,15 @@
 
         const enemies = [
             { n: "わるスライム", s: "💧", trait: "normal" },
-            { n: "おこコウモリ", s: "🦇", trait: "double_damage" }, // ミスで2倍ダメージ
+            { n: "おこコウモリ", s: "🦇", trait: "double_damage" },
             { n: "ドクロナイト", s: "💀", trait: "normal" }
         ];
 
         // --- UI更新 ---
         function updateHomeUI() {
-            // レベル計算 (100EXPごとに1UP)
             playerData.level = Math.floor(playerData.exp / 100) + 1;
             let currentExp = playerData.exp % 100;
             
-            // 称号更新
             let newTitle = titles[0].name;
             for(let t of titles) { if(playerData.level >= t.lv) newTitle = t.name; }
             playerData.title = newTitle;
@@ -204,7 +203,7 @@
         // --- バトルロジック ---
         function startBattle() {
             switchScreen('battle-screen');
-            heroHp = 5; // 初期HP
+            heroHp = 5; 
             comboCount = 0; maxCombo = 0;
             isGameOver = false;
             updateHpBar('hero', 100);
@@ -213,13 +212,16 @@
             document.getElementById('enemy-name').innerText = currentEnemy.n;
             document.getElementById('enemy-img').innerText = currentEnemy.s;
 
-            // 問題生成 (あまりなしの基本問題)
-            const a = Math.floor(Math.random() * 4) + 2; 
-            const q1 = Math.floor(Math.random() * 3) + 1; 
-            const q2 = Math.floor(Math.random() * 4); 
-            const d1 = a * q1, d2 = a * q2;
+            // --- 基礎固め用：必ず1ケタに収まる2桁÷1桁の基本問題を生成 ---
+            const a = Math.floor(Math.random() * 4) + 2; // 割る数: 2〜5
+            const maxQ1 = Math.floor(9 / a); // 十の位が9を超えないようにする
+            const q1 = Math.floor(Math.random() * maxQ1) + 1; // 答え(十の位)
+            const maxQ2 = Math.floor(9 / a); // 一の位が9を超えないようにする
+            const q2 = Math.floor(Math.random() * (maxQ2 + 1)); // 答え(一の位): 0も含む
+            
+            const d1 = a * q1; // 割られる数(十の位)
+            const d2 = a * q2; // 割られる数(一の位)
 
-            // 教育的メッセージの強化（逆算思考）
             scenario = [
                 { id: 'q1', ans: q1, type: 'tateru', msg: `${d1}を${a}ずつ分けると何こ？\n(${a}×□=${d1})` },
                 { id: 'm1', ans: d1, type: 'kakeru', msg: `${a} × ${q1} の答えを書こう` },
@@ -267,14 +269,12 @@
             const cell = document.getElementById(step.id);
 
             if (num === step.ans) {
-                // 正解＆コンボ処理
                 comboCount++;
                 if(comboCount > maxCombo) maxCombo = comboCount;
                 
                 cell.innerText = num; cell.className = "cell input-box correct";
                 if(step.type === 'orosu') cell.classList.add('drop-anim');
                 
-                // コンボ表示
                 if(comboCount >= 2) {
                     const comboUI = document.getElementById('combo-display');
                     comboUI.innerText = `${comboCount} 連撃!!`;
@@ -289,20 +289,17 @@
                 setTimeout(updateStep, 250);
 
             } else {
-                // 不正解判定
                 comboCount = 0;
                 let damage = currentEnemy.trait === "double_damage" ? 2 : 1;
                 heroHp -= damage;
                 updateHpBar('hero', (heroHp / 5) * 100);
 
-                // 「おしい！」判定 (答えの±1を入力してしまった場合)
                 if (Math.abs(num - step.ans) === 1) {
                     document.getElementById('msg-text').innerText = "おしい！あと少しずれてるよ！";
                 } else {
                     document.getElementById('msg-text').innerText = "❌ ミス！ダメージを受けた！";
                 }
 
-                // 画面揺れ演出
                 const game = document.getElementById('main-game');
                 game.classList.remove('shake'); void game.offsetWidth; game.classList.add('shake');
                 document.getElementById('red-flash').style.opacity = 1;
@@ -310,7 +307,7 @@
 
                 if (heroHp <= 0) {
                     isGameOver = true;
-                    document.getElementById('msg-text').innerHTML = "勇者はたおれた...<br>再読み込みしてね";
+                    document.getElementById('msg-text').innerHTML = "勇者はたおれた...<br>修行をやり直そう（再読み込み）";
                 }
             }
         }
@@ -319,7 +316,7 @@
 
         function showResult() {
             switchScreen('result-screen');
-            let earnedExp = 30 + (maxCombo * 5); // コンボボーナス
+            let earnedExp = 30 + (maxCombo * 5);
             playerData.exp += earnedExp;
             document.getElementById('res-exp').innerText = `+${earnedExp} EXP`;
             document.getElementById('res-combo').innerText = `${maxCombo} 回`;
@@ -332,7 +329,6 @@
 
         // 初期化
         updateHomeUI();
-
     </script>
 </body>
 </html>
