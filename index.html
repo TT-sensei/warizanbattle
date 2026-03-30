@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>筆算バトル - 必殺技エディション</title>
+    <title>筆算バトル - RPGエディション</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -13,6 +13,7 @@
             --accent-kakeru: #feca57;
             --accent-hiku: #ff6b6b;
             --accent-orosu: #48dbfb;
+            --ui-bg: #222;
         }
 
         body {
@@ -27,305 +28,216 @@
             user-select: none;
         }
 
-        /* --- ヘッダー：ステップインジケーター --- */
-        .step-indicator {
-            display: flex;
-            justify-content: space-around;
-            background: #222;
-            padding: 10px 0;
-            border-bottom: 2px solid #444;
-            z-index: 10;
-        }
-        .step-item {
-            font-weight: bold;
-            font-size: 14px;
-            padding: 5px 12px;
-            border-radius: 20px;
-            opacity: 0.3;
-            transition: all 0.3s;
-            border: 1px solid transparent;
-        }
-        .step-item.active {
-            opacity: 1;
-            transform: scale(1.1);
-            border-color: white;
-            box-shadow: 0 0 10px currentColor;
-        }
+        /* --- 画面切り替え --- */
+        .screen { display: none; flex: 1; flex-direction: column; width: 100%; height: 100%; }
+        .screen.active { display: flex; }
 
-        /* --- メインフィールド --- */
-        .main-game {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px;
+        /* --- ホーム画面 --- */
+        #home-screen {
+            justify-content: center; align-items: center;
             background: radial-gradient(circle, #2c3e50 0%, #000 100%);
-            position: relative;
+            text-align: center; padding: 20px;
         }
+        .title-logo { font-size: 40px; font-weight: bold; color: #f1c40f; text-shadow: 2px 2px 0 #d35400; margin-bottom: 20px; }
+        .status-box { background: rgba(0,0,0,0.6); padding: 20px; border-radius: 15px; border: 2px solid #555; margin-bottom: 30px; width: 80%; max-width: 300px; }
+        .player-title { color: #48dbfb; font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+        .exp-bar-bg { width: 100%; background: #333; height: 15px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        .exp-bar-fill { height: 100%; background: #9b59b6; width: 0%; transition: width 0.5s; }
+        .start-btn { background: #e74c3c; color: white; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; box-shadow: 0 5px 0 #c0392b; cursor: pointer; }
+        .start-btn:active { transform: translateY(5px); box-shadow: none; }
 
-        .side-area {
-            width: 80px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 5;
-        }
+        /* --- バトル画面 --- */
+        .step-indicator { display: flex; justify-content: space-around; background: var(--ui-bg); padding: 10px 0; border-bottom: 2px solid #444; z-index: 10; }
+        .step-item { font-weight: bold; font-size: 14px; padding: 5px 12px; border-radius: 20px; opacity: 0.3; transition: all 0.3s; border: 1px solid transparent; }
+        .step-item.active { opacity: 1; transform: scale(1.1); border-color: white; box-shadow: 0 0 10px currentColor; }
 
+        .main-game { flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 10px; background: radial-gradient(circle, #2c3e50 0%, #000 100%); position: relative; }
+        .side-area { width: 80px; text-align: center; display: flex; flex-direction: column; align-items: center; z-index: 5; }
         .char-sprite { font-size: 50px; transition: transform 0.2s; }
-        .hp-bar-v {
-            width: 12px; height: 120px;
-            background: #333; border: 1px solid #fff;
-            border-radius: 6px; position: relative; overflow: hidden;
-            margin-top: 10px;
-        }
-        .hp-fill-v {
-            position: absolute; bottom: 0; width: 100%;
-            transition: height 0.3s ease-out;
-        }
+        .hp-bar-v { width: 12px; height: 120px; background: #333; border: 1px solid #fff; border-radius: 6px; position: relative; overflow: hidden; margin-top: 10px; }
+        .hp-fill-v { position: absolute; bottom: 0; width: 100%; transition: height 0.3s ease-out; }
 
-        /* --- 中央：筆算ボード --- */
         .center-board {
-            background: var(--panel-bg);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 0 30px rgba(255,255,255,0.1);
-            color: #333;
-            z-index: 5;
-            background-image: linear-gradient(to right, 
-                transparent 45px, var(--line-color) 45px, var(--line-color) 47px,
-                transparent 47px, transparent 85px, var(--line-color) 85px, var(--line-color) 87px,
-                transparent 87px, transparent 125px, var(--line-color) 125px, var(--line-color) 127px,
-                transparent 127px
-            );
+            background: var(--panel-bg); border-radius: 15px; padding: 20px; box-shadow: 0 0 30px rgba(255,255,255,0.1); color: #333; z-index: 5;
+            background-image: linear-gradient(to right, transparent 45px, var(--line-color) 45px, var(--line-color) 47px, transparent 47px, transparent 85px, var(--line-color) 85px, var(--line-color) 87px, transparent 87px, transparent 125px, var(--line-color) 125px, var(--line-color) 127px, transparent 127px);
         }
 
-        .hissan-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 40px);
-            grid-auto-rows: 40px;
-        }
-
-        .cell {
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; font-weight: bold; position: relative;
-        }
+        .hissan-grid { display: grid; grid-template-columns: repeat(4, 40px); grid-auto-rows: 40px; }
+        .cell { display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; position: relative; }
         .border-bottom { border-bottom: 3px solid #333; }
-        .bracket { 
-            border-left: 3px solid #333; border-top: 3px solid #333;
-            border-top-left-radius: 10px; margin-top: 15px; height: 25px;
-        }
+        .bracket { border-left: 3px solid #333; border-top: 3px solid #333; border-top-left-radius: 10px; margin-top: 15px; height: 25px; }
 
-        /* 入力ボックス */
-        .input-box {
-            width: 34px; height: 34px;
-            border: 2px dashed #bbb; border-radius: 5px;
-            text-align: center; line-height: 34px; background: transparent;
-        }
-        .input-box.active {
-            border: 3px solid #e74c3c;
-            background: rgba(231, 76, 60, 0.15);
-            animation: pulse 0.6s infinite alternate;
-        }
+        .input-box { width: 34px; height: 34px; border: 2px dashed #bbb; border-radius: 5px; text-align: center; line-height: 34px; background: transparent; }
+        .input-box.active { border: 3px solid #e74c3c; background: rgba(231, 76, 60, 0.15); animation: pulse 0.6s infinite alternate; }
         .input-box.correct { border: none; color: #333; }
-
         @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
         .drop-anim { animation: dropDown 0.4s ease-in forwards; }
         @keyframes dropDown { 0% { transform: translateY(-30px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 
-        /* --- 必殺技カットイン --- */
-        .cutin-box {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            font-size: 44px;
-            font-weight: 900;
-            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 4px 4px 10px rgba(0,0,0,0.8);
-            pointer-events: none;
-            z-index: 50;
-            opacity: 0;
-            white-space: nowrap;
-        }
-        .cutin-anim { animation: cutin 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        
-        @keyframes cutin {
-            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 0; }
-            20% { transform: translate(-50%, -50%) scale(1.2) rotate(5deg); opacity: 1; }
-            70% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
-        }
+        /* コンボ表示 */
+        .combo-text { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; font-weight: bold; color: #f1c40f; text-shadow: 2px 2px 0 #000; z-index: 60; opacity: 0; pointer-events: none; }
+        .combo-anim { animation: popupCombo 0.8s ease-out; }
+        @keyframes popupCombo { 0% { transform: translate(-50%, -30%) scale(0.5); opacity: 0; } 20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 80% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { opacity: 0; } }
 
-        .msg-overlay {
-            position: absolute; top: 15px; width: 100%; text-align: center;
-            font-size: 16px; font-weight: bold; pointer-events: none;
-            text-shadow: 2px 2px 4px #000; z-index: 10;
-        }
+        .msg-overlay { position: absolute; top: 15px; width: 100%; text-align: center; font-size: 16px; font-weight: bold; pointer-events: none; text-shadow: 2px 2px 4px #000; z-index: 10; }
 
-        /* --- テンキー --- */
-        .controls {
-            background: #1a1a1a; padding: 10px;
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
-            padding-bottom: env(safe-area-inset-bottom, 20px);
-        }
-        .btn {
-            height: 60px; background: #eee; border: none; border-radius: 10px;
-            font-size: 24px; font-weight: bold; color: #333;
-            box-shadow: 0 4px 0 #999; cursor: pointer;
-        }
+        .controls { background: #1a1a1a; padding: 10px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding-bottom: env(safe-area-inset-bottom, 20px); }
+        .btn { height: 60px; background: #eee; border: none; border-radius: 10px; font-size: 24px; font-weight: bold; color: #333; box-shadow: 0 4px 0 #999; cursor: pointer; }
         .btn:active { transform: translateY(4px); box-shadow: none; }
-
+        
         .screen-red { position: fixed; inset:0; background: rgba(255,0,0,0.4); opacity:0; pointer-events:none; transition: opacity 0.2s; z-index: 100; }
         .shake { animation: shakeAnim 0.4s; }
         @keyframes shakeAnim { 0%, 100% {transform:translateX(0);} 25% {transform:translateX(-10px) rotate(-2deg);} 75% {transform:translateX(10px) rotate(2deg);} }
+
+        /* --- リザルト画面 --- */
+        #result-screen { justify-content: center; align-items: center; background: rgba(0,0,0,0.9); text-align: center; z-index: 200; position: absolute; top:0; left:0; }
+        .result-box { background: #2c3e50; padding: 30px; border-radius: 15px; border: 2px solid #f1c40f; }
     </style>
 </head>
 <body>
 
-    <div id="red-flash" class="screen-red"></div>
-
-    <div class="step-indicator">
-        <div id="step-tateru" class="step-item" style="color:var(--accent-tateru)">①たてる</div>
-        <div id="step-kakeru" class="step-item" style="color:var(--accent-kakeru)">②かける</div>
-        <div id="step-hiku" class="step-item" style="color:var(--accent-hiku)">③ひく</div>
-        <div id="step-orosu" class="step-item" style="color:var(--accent-orosu)">④おろす</div>
+    <div id="home-screen" class="screen active">
+        <div class="title-logo">筆算バトル<br><span style="font-size: 20px; color: white;">~ 伝説の勇者 ~</span></div>
+        <div class="status-box">
+            <div id="display-title" class="player-title">みならい勇者</div>
+            <div>プレイヤーLv: <span id="display-level">1</span></div>
+            <div style="font-size: 12px; margin-top: 10px; text-align: left;">次のレベルまで</div>
+            <div class="exp-bar-bg"><div id="display-exp" class="exp-bar-fill"></div></div>
+        </div>
+        <button class="start-btn" onclick="startBattle()">バトルへ出発！</button>
     </div>
 
-    <div class="main-game" id="main-game">
-        <div class="side-area">
-            <div id="hero-img" class="char-sprite">🦸</div>
-            <div class="hp-bar-v"><div id="hero-hp" class="hp-fill-v" style="background:#2ecc71; height:100%;"></div></div>
-            <div style="font-size:10px; margin-top:5px;">勇者</div>
+    <div id="battle-screen" class="screen">
+        <div id="red-flash" class="screen-red"></div>
+        <div class="step-indicator">
+            <div id="step-tateru" class="step-item" style="color:var(--accent-tateru)">①たてる</div>
+            <div id="step-kakeru" class="step-item" style="color:var(--accent-kakeru)">②かける</div>
+            <div id="step-hiku" class="step-item" style="color:var(--accent-hiku)">③ひく</div>
+            <div id="step-orosu" class="step-item" style="color:var(--accent-orosu)">④おろす</div>
         </div>
 
-        <div class="msg-overlay" id="msg-text">タップしてバトル開始！</div>
+        <div class="main-game" id="main-game">
+            <div class="side-area">
+                <div id="hero-img" class="char-sprite">🦸</div>
+                <div class="hp-bar-v"><div id="hero-hp" class="hp-fill-v" style="background:#2ecc71; height:100%;"></div></div>
+                <div style="font-size:10px; margin-top:5px;">勇者</div>
+            </div>
 
-        <div id="cutin-text" class="cutin-box"></div>
+            <div class="msg-overlay" id="msg-text"></div>
+            <div id="combo-display" class="combo-text"></div>
 
-        <div class="center-board">
-            <div id="hissan-grid" class="hissan-grid">
-                </div>
+            <div class="center-board">
+                <div id="hissan-grid" class="hissan-grid"></div>
+            </div>
+
+            <div class="side-area">
+                <div id="enemy-img" class="char-sprite">💧</div>
+                <div class="hp-bar-v"><div id="enemy-hp" class="hp-fill-v" style="background:#e74c3c; height:100%;"></div></div>
+                <div style="font-size:10px; margin-top:5px;" id="enemy-name">スライム</div>
+            </div>
         </div>
 
-        <div class="side-area">
-            <div id="enemy-img" class="char-sprite">💧</div>
-            <div class="hp-bar-v"><div id="enemy-hp" class="hp-fill-v" style="background:#e74c3c; height:100%;"></div></div>
-            <div style="font-size:10px; margin-top:5px;" id="enemy-name">スライム</div>
+        <div class="controls">
+            <button class="btn" onclick="inputNum(1)">1</button>
+            <button class="btn" onclick="inputNum(2)">2</button>
+            <button class="btn" onclick="inputNum(3)">3</button>
+            <button class="btn" onclick="inputNum(4)">4</button>
+            <button class="btn" onclick="inputNum(5)">5</button>
+            <button class="btn" onclick="inputNum(6)">6</button>
+            <button class="btn" onclick="inputNum(7)">7</button>
+            <button class="btn" onclick="inputNum(8)">8</button>
+            <button class="btn" onclick="inputNum(9)">9</button>
+            <button class="btn" onclick="inputNum(0)">0</button>
         </div>
     </div>
 
-    <div class="controls">
-        <button class="btn" onclick="inputNum(1)">1</button>
-        <button class="btn" onclick="inputNum(2)">2</button>
-        <button class="btn" onclick="inputNum(3)">3</button>
-        <button class="btn" onclick="inputNum(4)">4</button>
-        <button class="btn" onclick="inputNum(5)">5</button>
-        <button class="btn" onclick="inputNum(6)">6</button>
-        <button class="btn" onclick="inputNum(7)">7</button>
-        <button class="btn" onclick="inputNum(8)">8</button>
-        <button class="btn" onclick="inputNum(9)">9</button>
-        <button class="btn" onclick="inputNum(0)">0</button>
+    <div id="result-screen" class="screen">
+        <div class="result-box">
+            <h2 style="color: #f1c40f;">バトル勝利！</h2>
+            <p>獲得経験値: <span id="res-exp" style="font-size:24px; font-weight:bold;">+20</span></p>
+            <p>最大コンボ: <span id="res-combo"></span></p>
+            <button class="start-btn" style="margin-top: 20px; font-size: 18px;" onclick="returnHome()">ホームへ戻る</button>
+        </div>
     </div>
 
     <script>
-        // --- Web Audio API (効果音) ---
-        let audioCtx;
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        function playSfx(type) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            if (type === 'hit') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1);
-                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-            } else if (type === 'damage') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            } else if (type === 'finish') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(554, audioCtx.currentTime + 0.15);
-                osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.3);
-                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.6);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.6);
-            }
-        }
-
-        // --- ゲームデータ自動生成 ---
-        const enemies = [
-            { n: "わるスライム", s: "💧" }, { n: "おこコウモリ", s: "🦇" },
-            { n: "ドクロナイト", s: "💀" }, { n: "ちびドラゴン", s: "🐉" },
-            { n: "マッドゴースト", s: "👻" }, { n: "はぐれロボ", s: "🤖" }
+        // --- プレイヤーデータ ---
+        let playerData = { exp: 0, level: 1, title: "みならい勇者" };
+        const titles = [
+            { lv: 1, name: "みならい勇者" },
+            { lv: 3, name: "わりざん戦士" },
+            { lv: 5, name: "筆算マスター" },
+            { lv: 10, name: "伝説の数学者" }
         ];
 
-        let currentStep = 0;
-        let scenario = [];
-        let heroHp = 3;
-        let enemyHp = 0;
-        let enemyMaxHp = 0;
-        let isGameOver = false;
+        // --- バトル状態 ---
+        let currentStep = 0, scenario = [], heroHp = 3, enemyHp = 0, enemyMaxHp = 0, isGameOver = false;
+        let comboCount = 0, maxCombo = 0, currentEnemy = {};
 
-        // ランダムな初級問題（あまりなし）を生成
-        function generateProblem() {
-            const a = Math.floor(Math.random() * 4) + 2; // 割る数: 2〜5
-            const q1 = Math.floor(Math.random() * 3) + 1; // 十の位の答え: 1〜3
-            const q2 = Math.floor(Math.random() * 4); // 一の位の答え: 0〜3
-            const d1 = a * q1;
-            const d2 = a * q2;
-            return { a: a, d1: d1, d2: d2, q1: q1, q2: q2 };
+        const enemies = [
+            { n: "わるスライム", s: "💧", trait: "normal" },
+            { n: "おこコウモリ", s: "🦇", trait: "double_damage" }, // ミスで2倍ダメージ
+            { n: "ドクロナイト", s: "💀", trait: "normal" }
+        ];
+
+        // --- UI更新 ---
+        function updateHomeUI() {
+            // レベル計算 (100EXPごとに1UP)
+            playerData.level = Math.floor(playerData.exp / 100) + 1;
+            let currentExp = playerData.exp % 100;
+            
+            // 称号更新
+            let newTitle = titles[0].name;
+            for(let t of titles) { if(playerData.level >= t.lv) newTitle = t.name; }
+            playerData.title = newTitle;
+
+            document.getElementById('display-level').innerText = playerData.level;
+            document.getElementById('display-title').innerText = playerData.title;
+            document.getElementById('display-exp').style.width = currentExp + "%";
         }
 
-        function initGame() {
-            if(heroHp <= 0) return;
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // --- バトルロジック ---
+        function startBattle() {
+            switchScreen('battle-screen');
+            heroHp = 5; // 初期HP
+            comboCount = 0; maxCombo = 0;
             isGameOver = false;
+            updateHpBar('hero', 100);
             
-            // 敵をランダムに選ぶ
-            const enemy = enemies[Math.floor(Math.random() * enemies.length)];
-            document.getElementById('enemy-name').innerText = enemy.n;
-            document.getElementById('enemy-img').innerText = enemy.s;
+            currentEnemy = enemies[Math.floor(Math.random() * enemies.length)];
+            document.getElementById('enemy-name').innerText = currentEnemy.n;
+            document.getElementById('enemy-img').innerText = currentEnemy.s;
 
-            // 問題を生成
-            const p = generateProblem();
+            // 問題生成 (あまりなしの基本問題)
+            const a = Math.floor(Math.random() * 4) + 2; 
+            const q1 = Math.floor(Math.random() * 3) + 1; 
+            const q2 = Math.floor(Math.random() * 4); 
+            const d1 = a * q1, d2 = a * q2;
 
+            // 教育的メッセージの強化（逆算思考）
             scenario = [
-                { id: 'q1', ans: p.q1, type: 'tateru', word: '🔥たてる！', msg: `${p.d1}の中に${p.a}はいくつ？` },
-                { id: 'm1', ans: p.q1 * p.a, type: 'kakeru', word: '⚡かける！', msg: `${p.a} × ${p.q1} は？` },
-                { id: 's1', ans: p.d1 - (p.q1 * p.a), type: 'hiku', word: '💥ひく！', msg: `${p.d1} - ${p.q1 * p.a} は？` },
-                { id: 'd2_down', ans: p.d2, type: 'orosu', word: '⬇️おろす！', msg: `となりの ${p.d2} をおろそう` },
-                { id: 'q2', ans: p.q2, type: 'tateru', word: '🔥たてる！', msg: `${p.d2}の中に${p.a}は？` },
-                { id: 'm2', ans: p.q2 * p.a, type: 'kakeru', word: '⚡かける！', msg: `${p.a} × ${p.q2} は？` },
-                { id: 's2', ans: p.d2 - (p.q2 * p.a), type: 'hiku', word: '💥フィニッシュ！', msg: `さいごの引き算！` }
+                { id: 'q1', ans: q1, type: 'tateru', msg: `${d1}を${a}ずつ分けると何こ？\n(${a}×□=${d1})` },
+                { id: 'm1', ans: d1, type: 'kakeru', msg: `${a} × ${q1} の答えを書こう` },
+                { id: 's1', ans: 0, type: 'hiku', msg: `${d1} - ${d1} は？` },
+                { id: 'd2_down', ans: d2, type: 'orosu', msg: `となりの ${d2} をそのままおろす` },
+                { id: 'q2', ans: q2, type: 'tateru', msg: `のこりの${d2}を${a}ずつ分けると？` },
+                { id: 'm2', ans: d2, type: 'kakeru', msg: `${a} × ${q2} の答えを書こう` },
+                { id: 's2', ans: 0, type: 'hiku', msg: `さいごの引き算！` }
             ];
 
-            enemyMaxHp = scenario.length;
-            enemyHp = enemyMaxHp;
-            currentStep = 0;
-            
+            enemyMaxHp = scenario.length; enemyHp = enemyMaxHp; currentStep = 0;
             updateHpBar('enemy', 100);
-            renderBoard(p.a, p.d1, p.d2);
-            
-            // 少し待ってから最初のステップへ
-            setTimeout(updateStep, 500);
+            renderBoard(a, d1, d2);
+            updateStep();
         }
 
         function renderBoard(a, d1, d2) {
-            const grid = document.getElementById('hissan-grid');
-            grid.innerHTML = `
+            document.getElementById('hissan-grid').innerHTML = `
                 <div class="cell"></div><div class="cell"></div><div class="cell"><div id="q1" class="input-box"></div></div><div class="cell"><div id="q2" class="input-box"></div></div>
                 <div class="cell">${a}</div><div class="cell bracket"></div><div class="cell border-bottom">${d1}</div><div class="cell border-bottom">${d2}</div>
                 <div class="cell"></div><div class="cell"></div><div class="cell border-bottom"><div id="m1" class="input-box"></div></div><div class="cell"></div>
@@ -337,100 +249,89 @@
 
         function updateStep() {
             if (currentStep >= scenario.length) {
-                document.getElementById('msg-text').innerText = "🎉 敵を撃破！次があらわれるぞ！";
-                playSfx('finish');
-                const eImg = document.getElementById('enemy-img');
-                eImg.style.transform = "scale(0) rotate(180deg)";
-                setTimeout(() => {
-                    eImg.style.transform = "scale(1) rotate(0deg)";
-                    initGame();
-                }, 2000);
+                setTimeout(showResult, 1000);
                 return;
             }
-
             const step = scenario[currentStep];
             document.querySelectorAll('.input-box').forEach(el => el.classList.remove('active'));
             document.getElementById(step.id).classList.add('active');
             document.getElementById('msg-text').innerText = step.msg;
 
-            // 上のインジケーターを光らせる
             document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active'));
             document.getElementById('step-' + step.type).classList.add('active');
-
-            // ド派手なカットイン演出
-            const cutin = document.getElementById('cutin-text');
-            cutin.className = `cutin-box type-${step.type}`;
-            cutin.style.color = `var(--accent-${step.type})`;
-            cutin.innerText = step.word;
-            void cutin.offsetWidth; // リフロー（アニメーション再起動のため）
-            cutin.classList.add('cutin-anim');
         }
 
         function inputNum(num) {
-            initAudio(); // 音声コンテキストの許可
-            if (isGameOver || currentStep >= scenario.length) {
-                if(heroHp <= 0) location.reload(); // ゲームオーバー時はリロード
-                return;
-            }
-
+            if (isGameOver || currentStep >= scenario.length) return;
             const step = scenario[currentStep];
             const cell = document.getElementById(step.id);
 
             if (num === step.ans) {
-                // 正解
-                playSfx('hit');
-                cell.innerText = num;
-                cell.className = "cell input-box correct";
+                // 正解＆コンボ処理
+                comboCount++;
+                if(comboCount > maxCombo) maxCombo = comboCount;
                 
-                // おろす時のアニメーション
+                cell.innerText = num; cell.className = "cell input-box correct";
                 if(step.type === 'orosu') cell.classList.add('drop-anim');
                 
-                // 敵にダメージ
+                // コンボ表示
+                if(comboCount >= 2) {
+                    const comboUI = document.getElementById('combo-display');
+                    comboUI.innerText = `${comboCount} 連撃!!`;
+                    comboUI.classList.remove('combo-anim');
+                    void comboUI.offsetWidth;
+                    comboUI.classList.add('combo-anim');
+                }
+
                 enemyHp--;
                 updateHpBar('enemy', (enemyHp / enemyMaxHp) * 100);
-                const eImg = document.getElementById('enemy-img');
-                eImg.style.transform = "scale(0.8) translate(10px, -10px)";
-                setTimeout(() => eImg.style.transform = "scale(1)", 100);
-
                 currentStep++;
-                // 少しだけ待って次へ（テンポ重視）
                 setTimeout(updateStep, 250);
 
             } else {
-                // 不正解
-                playSfx('damage');
-                heroHp--;
-                updateHpBar('hero', (heroHp / 3) * 100);
-                
-                // ダメージ演出
-                document.getElementById('main-game').classList.add('shake');
-                document.getElementById('red-flash').style.opacity = 1;
-                setTimeout(() => {
-                    document.getElementById('main-game').classList.remove('shake');
-                    document.getElementById('red-flash').style.opacity = 0;
-                }, 300);
+                // 不正解判定
+                comboCount = 0;
+                let damage = currentEnemy.trait === "double_damage" ? 2 : 1;
+                heroHp -= damage;
+                updateHpBar('hero', (heroHp / 5) * 100);
 
-                document.getElementById('msg-text').innerText = "❌ ミス！ダメージを受けた！";
+                // 「おしい！」判定 (答えの±1を入力してしまった場合)
+                if (Math.abs(num - step.ans) === 1) {
+                    document.getElementById('msg-text').innerText = "おしい！あと少しずれてるよ！";
+                } else {
+                    document.getElementById('msg-text').innerText = "❌ ミス！ダメージを受けた！";
+                }
+
+                // 画面揺れ演出
+                const game = document.getElementById('main-game');
+                game.classList.remove('shake'); void game.offsetWidth; game.classList.add('shake');
+                document.getElementById('red-flash').style.opacity = 1;
+                setTimeout(() => document.getElementById('red-flash').style.opacity = 0, 300);
 
                 if (heroHp <= 0) {
                     isGameOver = true;
-                    document.getElementById('msg-text').innerHTML = "💀 勇者はたおれた...<br>画面タップで最初から";
-                    document.getElementById('hero-img').innerText = "⚰️";
+                    document.getElementById('msg-text').innerHTML = "勇者はたおれた...<br>再読み込みしてね";
                 }
             }
         }
 
-        function updateHpBar(who, pct) {
-            document.getElementById(`${who}-hp`).style.height = pct + "%";
+        function updateHpBar(who, pct) { document.getElementById(`${who}-hp`).style.height = Math.max(0, pct) + "%"; }
+
+        function showResult() {
+            switchScreen('result-screen');
+            let earnedExp = 30 + (maxCombo * 5); // コンボボーナス
+            playerData.exp += earnedExp;
+            document.getElementById('res-exp').innerText = `+${earnedExp} EXP`;
+            document.getElementById('res-combo').innerText = `${maxCombo} 回`;
         }
 
-        // 初期スタート待ち
-        document.body.addEventListener('click', () => {
-            if(currentStep === 0 && !isGameOver && enemyHp === 0) {
-                 initAudio();
-                 initGame();
-            }
-        }, {once: true});
+        function returnHome() {
+            updateHomeUI();
+            switchScreen('home-screen');
+        }
+
+        // 初期化
+        updateHomeUI();
 
     </script>
 </body>
