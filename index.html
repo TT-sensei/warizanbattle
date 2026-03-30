@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>筆算バトル - 初級スライム編</title>
+    <title>筆算バトル - 冒険の始まり</title>
     <style>
         :root {
-            --bg-color: #202020;
-            --hero-hp: #3498db;
+            --bg-color: #1a1a2e;
+            --hero-hp: #2ecc71;
             --enemy-hp: #e74c3c;
             --accent: #f1c40f;
+            --line-color: rgba(52, 152, 219, 0.4); /* 水色の補助線 */
         }
 
         body {
-            font-family: 'Verdana', sans-serif;
+            font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'Verdana', sans-serif;
             background-color: var(--bg-color);
             color: white;
             margin: 0;
@@ -21,13 +22,13 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            user-select: none; /* テキスト選択禁止 */
+            user-select: none;
         }
 
         /* --- バトルフィールド --- */
         .battle-field {
             flex: 1;
-            background: linear-gradient(to bottom, #000000, #434343);
+            background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
             position: relative;
             display: flex;
             justify-content: space-between;
@@ -35,7 +36,6 @@
             align-items: flex-end;
         }
 
-        /* 敵キャラ */
         .enemy-area {
             width: 45%;
             text-align: center;
@@ -47,23 +47,20 @@
         .enemy-img {
             font-size: 80px;
             display: inline-block;
-            transition: transform 0.2s;
-            filter: drop-shadow(0 0 10px #00f);
+            transition: transform 0.2s, filter 0.2s;
+            filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.5));
         }
-        
-        /* 勇者（自分） */
+
         .hero-area {
             position: absolute;
-            bottom: 10px;
+            bottom: 20px;
             left: 20px;
             text-align: center;
             width: 100px;
         }
-        .hero-img {
-            font-size: 60px;
-        }
+        .hero-img { font-size: 60px; }
 
-        /* HPバー共通 */
+        /* HPバー */
         .hp-container {
             width: 100%;
             background: #333;
@@ -71,28 +68,58 @@
             border-radius: 5px;
             height: 15px;
             margin-top: 5px;
-            position: relative;
             overflow: hidden;
         }
-        .hp-fill {
-            height: 100%;
-            transition: width 0.3s;
-        }
+        .hp-fill { height: 100%; transition: width 0.3s ease-out; }
         #enemy-hp { background: var(--enemy-hp); width: 100%; }
         #hero-hp { background: var(--hero-hp); width: 100%; }
+        .hp-text { font-size: 12px; font-weight: bold; text-shadow: 1px 1px 0 #000; }
 
-        .hp-text { font-size: 10px; font-weight: bold; text-shadow: 1px 1px 0 #000; }
+        /* --- コンボカットイン --- */
+        .cutin-box {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 40px;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+        }
+        .cutin-anim { animation: cutin 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        .type-tateru { color: #ff9f43; } /* たてる: オレンジ */
+        .type-kakeru { color: #feca57; } /* かける: 黄色 */
+        .type-hiku { color: #ff6b6b; }   /* ひく: 赤 */
+        .type-orosu { color: #48dbfb; }  /* おろす: 水色 */
 
-        /* --- 筆算ボード（武器） --- */
+        @keyframes cutin {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            70% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+
+        /* --- 筆算ボード（水色ガイドライン付き） --- */
         .board-area {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(255, 255, 255, 0.9);
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             padding: 10px;
-            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
             color: #333;
+            /* 水色の点線を背景グラデーションで表現 */
+            background-image: linear-gradient(to right, 
+                transparent 40px, var(--line-color) 40px, var(--line-color) 42px,
+                transparent 42px, transparent 80px, var(--line-color) 80px, var(--line-color) 82px,
+                transparent 82px, transparent 120px, var(--line-color) 120px, var(--line-color) 122px,
+                transparent 122px
+            );
+            background-size: 160px 100%;
         }
 
         .hissan-grid {
@@ -105,7 +132,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
             position: relative;
         }
@@ -115,255 +142,324 @@
             border-left: 2px solid #333;
             border-top: 2px solid #333;
             border-top-left-radius: 8px;
-            margin-top: 12px;
-            height: 28px;
+            margin-top: 12px; height: 28px;
         }
 
         /* 入力ボックス */
         .input-box {
-            width: 34px;
-            height: 34px;
-            border: 2px dashed #aaa;
+            width: 32px; height: 32px;
+            border: 2px dashed #ccc;
             border-radius: 4px;
             text-align: center;
-            font-size: 20px;
-            background: #fff;
+            line-height: 32px;
+            background: transparent;
         }
         .input-box.active {
-            border: 2px solid #e67e22;
-            background: #fef9e7;
-            animation: pulse 1s infinite;
+            border: 3px solid #e74c3c;
+            background: rgba(255, 255, 0, 0.3);
+            animation: pulse 0.8s infinite alternate;
         }
         .input-box.correct {
-            border: 2px solid #27ae60;
-            background: #d5f5e3;
-            color: #27ae60;
+            border: none;
+            color: #333;
         }
-        @keyframes pulse { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
+        
+        /* おろす時のアニメーション用 */
+        .drop-anim { animation: dropDown 0.4s ease-in forwards; }
+        @keyframes dropDown { 0% { transform: translateY(-30px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0% {transform: scale(1);} 100% {transform: scale(1.15);} }
 
-        /* --- コントローラー --- */
+        /* --- 電卓型テンキー --- */
         .controls {
             background: #2c3e50;
-            padding: 10px;
+            padding: 15px;
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
-            height: 180px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            height: 250px;
+            border-top: 4px solid #1a252f;
         }
         .btn {
             background: #ecf0f1;
             border: none;
-            border-radius: 5px;
-            font-size: 24px;
+            border-radius: 8px;
+            font-size: 28px;
             color: #2c3e50;
             font-weight: bold;
-            box-shadow: 0 4px 0 #bdc3c7;
+            box-shadow: 0 5px 0 #bdc3c7;
+            cursor: pointer;
+            touch-action: manipulation;
         }
-        .btn:active { box-shadow: none; transform: translateY(4px); }
+        .btn:active { box-shadow: 0 0px 0 #bdc3c7; transform: translateY(5px); }
+        .btn-zero { grid-column: span 3; } /* 0ボタンは幅広く */
 
-        /* --- エフェクト --- */
-        /* プレイヤーがダメージを受けた時の赤フラッシュ */
-        .screen-shake {
-            animation: shake 0.4s;
-        }
-        .screen-red {
-            position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(255, 0, 0, 0.3);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.1s;
-        }
+        /* エフェクト */
+        .screen-shake { animation: shake 0.4s; }
+        .screen-red { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(255, 0, 0, 0.4); pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 100; }
+        @keyframes shake { 0%, 100% { transform: translate(0, 0); } 20%, 60% { transform: translate(-10px, 5px); } 40%, 80% { transform: translate(10px, -5px); } }
 
-        @keyframes shake {
-            0% { transform: translate(0, 0); }
-            20% { transform: translate(-10px, 0); }
-            40% { transform: translate(10px, 0); }
-            60% { transform: translate(-10px, 0); }
-            80% { transform: translate(10px, 0); }
-            100% { transform: translate(0, 0); }
-        }
-
-        /* メッセージ */
         .msg-box {
-            position: absolute;
-            top: 100px;
-            width: 100%;
-            text-align: center;
-            font-size: 14px;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px black;
-            pointer-events: none;
+            position: absolute; top: 110px; width: 100%; text-align: center;
+            font-size: 16px; font-weight: bold; text-shadow: 1px 1px 2px black;
         }
-
+        .level-text { position: absolute; top: 10px; left: 10px; font-weight: bold; color: var(--accent); }
     </style>
 </head>
 <body>
 
     <div class="screen-red" id="damage-overlay"></div>
+    <div class="level-text" id="level-display">Lv. 1</div>
 
     <div class="battle-field" id="battle-field">
-        
         <div class="enemy-area">
-            <div class="hp-text">わる・スライム</div>
+            <div class="hp-text" id="enemy-name">わる・スライム</div>
             <div class="hp-container"><div id="enemy-hp" class="hp-fill"></div></div>
             <div id="enemy-sprite" class="enemy-img">💧</div>
         </div>
 
-        <div class="msg-box" id="msg-text">スライムがあらわれた！<br>84 ÷ 4 をといてこうげきだ！</div>
+        <div class="msg-box" id="msg-text">タップしてバトルスタート！</div>
+        
+        <div id="cutin-text" class="cutin-box"></div>
 
         <div class="hero-area">
-            <div id="hero-sprite" class="hero-img">🦸</div>
+            <div id="hero-sprite" class="hero-img">🦸‍♂️</div>
             <div class="hp-container"><div id="hero-hp" class="hp-fill"></div></div>
             <div class="hp-text">HP</div>
         </div>
 
         <div class="board-area">
-            <div class="hissan-grid">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"><div id="cell-0" class="input-box"></div></div>
-                <div class="cell"><div id="cell-4" class="input-box"></div></div>
-
-                <div class="cell">4</div>
-                <div class="cell bracket"></div>
-                <div class="cell border-bottom">8</div>
-                <div class="cell border-bottom">4</div>
-
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell border-bottom"><div id="cell-1" class="input-box"></div></div>
-                <div class="cell"></div>
-
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"><div id="cell-2" class="input-box"></div></div>
-                <div class="cell"><div id="cell-3" class="input-box"></div></div>
-
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell border-bottom"><div id="cell-5" class="input-box"></div></div>
-
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"><div id="cell-6" class="input-box"></div></div>
-            </div>
+            <div class="hissan-grid" id="hissan-board">
+                </div>
         </div>
     </div>
 
     <div class="controls">
-        <button class="btn" onclick="inputNum(1)">1</button>
-        <button class="btn" onclick="inputNum(2)">2</button>
-        <button class="btn" onclick="inputNum(3)">3</button>
-        <button class="btn" onclick="inputNum(4)">4</button>
-        <button class="btn" onclick="inputNum(5)">5</button>
-        <button class="btn" onclick="inputNum(6)">6</button>
         <button class="btn" onclick="inputNum(7)">7</button>
         <button class="btn" onclick="inputNum(8)">8</button>
         <button class="btn" onclick="inputNum(9)">9</button>
-        <button class="btn" onclick="inputNum(0)">0</button>
+        <button class="btn" onclick="inputNum(4)">4</button>
+        <button class="btn" onclick="inputNum(5)">5</button>
+        <button class="btn" onclick="inputNum(6)">6</button>
+        <button class="btn" onclick="inputNum(1)">1</button>
+        <button class="btn" onclick="inputNum(2)">2</button>
+        <button class="btn" onclick="inputNum(3)">3</button>
+        <button class="btn btn-zero" onclick="inputNum(0)">0</button>
     </div>
 
     <script>
-        // 設定
-        // 問題: 84 ÷ 4 = 21 (あまり0)
-        const scenario = [
-            { id: 'cell-0', ans: 2, msg: "8の中に4はいくつ？（たてる）" },
-            { id: 'cell-1', ans: 8, msg: "4 × 2 は？（かける）" },
-            { id: 'cell-2', ans: 0, msg: "8 - 8 は？（ひく）" },
-            { id: 'cell-3', ans: 4, msg: "となりの 4 をおろそう（おろす）" },
-            { id: 'cell-4', ans: 1, msg: "4の中に4はいくつ？（たてる）" },
-            { id: 'cell-5', ans: 4, msg: "4 × 1 は？（かける）" },
-            { id: 'cell-6', ans: 0, msg: "4 - 4 は？（ひく）" }
-        ];
+        // --- Web Audio API (効果音) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
 
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'hit') {
+                // 正解音 (ピコン！)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+                osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); // A6
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'damage') {
+                // ダメージ音 (ブブッ)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'finish') {
+                // 撃破音 (ファンファーレ風)
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(554, audioCtx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            }
+        }
+
+        // --- ゲームデータ ---
+        // 初級用の問題リスト（十の位が割り切れて、あまりが出ないもの）
+        const problemList = [
+            { d: 84, a: 4 }, { d: 39, a: 3 }, { d: 48, a: 2 }, 
+            { d: 68, a: 2 }, { d: 93, a: 3 }, { d: 66, a: 6 }, 
+            { d: 28, a: 2 }, { d: 55, a: 5 }, { d: 88, a: 4 }
+        ];
+        
+        const enemies = ["💧スライム", "🦇コウモリ", "👻オバケ", "💀ガイコツ", "🐉ドラゴン"];
+
+        let currentLevel = 1;
+        let scenario = [];
         let currentStep = 0;
-        let enemyMaxHp = scenario.length; // ステップ数＝敵のHP
-        let enemyCurrentHp = enemyMaxHp;
-        let heroMaxHp = 3; // 3回間違えたらゲームオーバー
-        let heroCurrentHp = heroMaxHp;
+        let enemyMaxHp = 7;
+        let enemyCurrentHp = 7;
+        let heroMaxHp = 3;
+        let heroCurrentHp = 3;
+        let isGameOver = false;
 
         const msgEl = document.getElementById('msg-text');
         const enemyHpBar = document.getElementById('enemy-hp');
         const heroHpBar = document.getElementById('hero-hp');
+        const boardEl = document.getElementById('hissan-board');
+        const cutinEl = document.getElementById('cutin-text');
 
-        // ゲーム開始
-        window.onload = function() {
-            updateBoard();
-        };
-
-        function updateBoard() {
-            // クリアチェック
-            if (currentStep >= scenario.length) {
-                msgEl.innerHTML = "🎉 スライムをたおした！<br>あなたの勝ち！";
-                msgEl.style.color = "#f1c40f";
-                msgEl.style.fontSize = "20px";
-                document.getElementById('enemy-sprite').innerHTML = "✨";
-                return;
-            }
-
-            // ゲームオーバーチェック
-            if (heroCurrentHp <= 0) {
-                msgEl.innerHTML = "💀 やられてしまった...<br>再読み込みしてリトライ";
-                msgEl.style.color = "#e74c3c";
-                document.getElementById('hero-sprite').innerHTML = "⚰️";
-                return;
-            }
-
-            // 次の入力をアクティブに
-            document.querySelectorAll('.input-box').forEach(el => el.classList.remove('active'));
-            const nextCell = document.getElementById(scenario[currentStep].id);
-            nextCell.classList.add('active');
+        // --- 初期化処理 ---
+        function startNewLevel() {
+            if(heroCurrentHp <= 0) return;
+            isGameOver = false;
             
-            msgEl.textContent = scenario[currentStep].msg;
+            // 問題をランダムに選ぶ
+            const prob = problemList[Math.floor(Math.random() * problemList.length)];
+            const a = prob.a;
+            const d1 = Math.floor(prob.d / 10);
+            const d2 = prob.d % 10;
+            const q1 = Math.floor(d1 / a);
+            const q2 = Math.floor(d2 / a);
+
+            // ステップ（コンボ）の構築
+            scenario = [
+                { id: 'q1', ans: q1, type: 'tateru', word: '🔥たてる！', msg: `${d1}の中に${a}はいくつ？` },
+                { id: 'm1', ans: q1*a, type: 'kakeru', word: '⚡かける！', msg: `${a} × ${q1} は？` },
+                { id: 's1', ans: 0, type: 'hiku', word: '💥ひく！', msg: `${d1} - ${q1*a} は？` },
+                { id: 'd2', ans: d2, type: 'orosu', word: '⬇️おろす！', msg: `となりの ${d2} をおろそう` },
+                { id: 'q2', ans: q2, type: 'tateru', word: '🔥たてる！', msg: `${d2}の中に${a}はいくつ？` },
+                { id: 'm2', ans: q2*a, type: 'kakeru', word: '⚡かける！', msg: `${a} × ${q2} は？` },
+                { id: 's2', ans: 0, type: 'hiku', word: '💥フィニッシュ！', msg: `${d2} - ${q2*a} は？` }
+            ];
+
+            enemyMaxHp = scenario.length;
+            enemyCurrentHp = enemyMaxHp;
+            currentStep = 0;
+
+            // 敵の見た目変更
+            document.getElementById('enemy-name').innerText = `Lv.${currentLevel} ` + enemies[(currentLevel-1) % enemies.length];
+            document.getElementById('enemy-sprite').innerHTML = enemies[(currentLevel-1) % enemies.length].substring(0,2);
+            document.getElementById('enemy-sprite').style.filter = `hue-rotate(${currentLevel * 40}deg) drop-shadow(0 0 15px red)`;
+            
+            document.getElementById('level-display').innerText = `Lv. ${currentLevel}`;
+            enemyHpBar.style.width = "100%";
+
+            renderBoard(a, d1, d2);
+            updateGame();
+        }
+
+        // 盤面の描画
+        function renderBoard(a, d1, d2) {
+            boardEl.innerHTML = `
+                <div class="cell"></div><div class="cell"></div><div class="cell"><div id="q1" class="input-box"></div></div><div class="cell"><div id="q2" class="input-box"></div></div>
+                <div class="cell">${a}</div><div class="cell bracket"></div><div class="cell border-bottom">${d1}</div><div class="cell border-bottom">${d2}</div>
+                <div class="cell"></div><div class="cell"></div><div class="cell border-bottom"><div id="m1" class="input-box"></div></div><div class="cell"></div>
+                <div class="cell"></div><div class="cell"></div><div class="cell"><div id="s1" class="input-box"></div></div><div class="cell"><div id="d2" class="input-box"></div></div>
+                <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell border-bottom"><div id="m2" class="input-box"></div></div>
+                <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><div id="s2" class="input-box"></div></div>
+            `;
+        }
+
+        function updateGame() {
+            if (isGameOver) return;
+
+            // クリア判定
+            if (currentStep >= scenario.length) {
+                msgEl.innerText = "🎉 敵をたおした！次へ進むぞ！";
+                playSound('finish');
+                document.getElementById('enemy-sprite').style.transform = "scale(0) rotate(180deg)";
+                setTimeout(() => {
+                    currentLevel++;
+                    startNewLevel();
+                }, 2000);
+                return;
+            }
+
+            // 全ての入力をリセットして、次をアクティブに
+            document.querySelectorAll('.input-box').forEach(el => el.classList.remove('active'));
+            const step = scenario[currentStep];
+            const activeCell = document.getElementById(step.id);
+            activeCell.classList.add('active');
+            
+            msgEl.innerText = step.msg;
+
+            // カットイン演出
+            cutinEl.className = `cutin-box type-${step.type}`;
+            cutinEl.innerText = step.word;
+            void cutinEl.offsetWidth; // アニメーションリセット用
+            cutinEl.classList.add('cutin-anim');
         }
 
         function inputNum(num) {
-            // ゲーム終了してたら操作無効
-            if (currentStep >= scenario.length || heroCurrentHp <= 0) return;
+            initAudio(); // 最初のタップでAudioContextを有効化
+            if (isGameOver || currentStep >= scenario.length) {
+                if(heroCurrentHp <= 0) location.reload(); // ゲームオーバー時はリロード
+                return;
+            }
 
             const step = scenario[currentStep];
             const cell = document.getElementById(step.id);
 
             if (num === step.ans) {
-                // 正解！（攻撃）
-                cell.textContent = num;
-                cell.classList.remove('active');
-                cell.classList.add('correct');
+                // 正解
+                playSound('hit');
+                cell.innerText = num;
+                cell.className = 'input-box correct';
                 
+                // おろす時のアニメーション
+                if(step.type === 'orosu') cell.classList.add('drop-anim');
+
                 // 敵にダメージ
                 enemyCurrentHp--;
-                const percent = (enemyCurrentHp / enemyMaxHp) * 100;
-                enemyHpBar.style.width = percent + "%";
+                enemyHpBar.style.width = ((enemyCurrentHp / enemyMaxHp) * 100) + "%";
                 
-                // エフェクト
-                document.getElementById('enemy-sprite').style.transform = "scale(0.8)";
-                setTimeout(() => document.getElementById('enemy-sprite').style.transform = "scale(1)", 100);
+                const enemyImg = document.getElementById('enemy-sprite');
+                enemyImg.style.transform = "scale(0.8) translate(10px, -10px)";
+                setTimeout(() => enemyImg.style.transform = "scale(1) translate(0, 0)", 150);
 
                 currentStep++;
-                updateBoard();
+                setTimeout(updateGame, 300); // 少し間をあけて次へ
 
             } else {
-                // 不正解！（ダメージ受ける）
+                // 不正解
+                playSound('damage');
                 heroCurrentHp--;
-                const percent = (heroCurrentHp / heroMaxHp) * 100;
-                heroHpBar.style.width = percent + "%";
+                heroHpBar.style.width = ((heroCurrentHp / heroMaxHp) * 100) + "%";
 
-                // 画面揺らし＆赤フラッシュ
+                // 画面揺れ＆赤フラッシュ
                 const field = document.getElementById('battle-field');
                 field.classList.remove('screen-shake');
-                void field.offsetWidth; // リフロー
+                void field.offsetWidth;
                 field.classList.add('screen-shake');
 
                 const overlay = document.getElementById('damage-overlay');
                 overlay.style.opacity = 1;
                 setTimeout(() => overlay.style.opacity = 0, 200);
 
-                msgEl.textContent = "ミス！こうげきを受けた！";
+                msgEl.innerText = "❌ ミス！ダメージを受けた！";
+
+                if (heroCurrentHp <= 0) {
+                    isGameOver = true;
+                    msgEl.innerHTML = "💀 勇者はたおれた...<br>画面タップで最初から";
+                    document.getElementById('hero-sprite').innerText = "⚰️";
+                }
             }
         }
+
+        // 初期スタート待ち
+        document.body.addEventListener('click', () => {
+            if(currentStep === 0 && currentLevel === 1 && !isGameOver && enemyCurrentHp === enemyMaxHp) {
+                 initAudio();
+                 startNewLevel();
+            }
+        }, {once: true});
+
     </script>
 </body>
 </html>
