@@ -57,19 +57,17 @@
         .hp-bar-v { width: 12px; height: 120px; background: #333; border: 1px solid #fff; border-radius: 6px; position: relative; overflow: hidden; margin-top: 10px; }
         .hp-fill-v { position: absolute; bottom: 0; width: 100%; transition: height 0.3s ease-out; }
 
-        .center-board {
-            background: var(--panel-bg); border-radius: 15px; padding: 20px; box-shadow: 0 0 30px rgba(255,255,255,0.1); color: #333; z-index: 5;
-            background-image: linear-gradient(to right, transparent 45px, var(--line-color) 45px, var(--line-color) 47px, transparent 47px, transparent 85px, var(--line-color) 85px, var(--line-color) 87px, transparent 87px, transparent 125px, var(--line-color) 125px, var(--line-color) 127px, transparent 127px);
-        }
-
-        .hissan-grid { display: grid; grid-template-columns: repeat(4, 40px); grid-auto-rows: 40px; }
+        .center-board { background: var(--panel-bg); border-radius: 15px; padding: 20px; box-shadow: 0 0 30px rgba(255,255,255,0.1); color: #333; z-index: 5; position: relative; }
+        .board-image { width: 184px; height: 252px; object-fit: contain; display: block; border-radius: 8px; }
+        .hissan-grid { display: grid; grid-template-columns: repeat(4, 46px); grid-auto-rows: 42px; position: absolute; top: 20px; left: 20px; }
         .cell { display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; position: relative; }
         .border-bottom { border-bottom: 3px solid #333; }
         .bracket { border-left: 3px solid #333; border-top: 3px solid #333; border-top-left-radius: 10px; margin-top: 15px; height: 25px; }
 
-        .input-box { width: 34px; height: 34px; border: 2px dashed #bbb; border-radius: 5px; text-align: center; line-height: 34px; background: transparent; }
+        .input-box { width: 36px; height: 36px; border: 2px dashed #bbb; border-radius: 8px; text-align: center; line-height: 36px; background: #fff; }
         .input-box.active { border: 3px solid #e74c3c; background: rgba(231, 76, 60, 0.15); animation: pulse 0.6s infinite alternate; }
         .input-box.correct { border: none; color: #333; }
+        .board-caption { margin-top: 10px; font-size: 12px; color: #555; text-align: center; }
         @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
         .drop-anim { animation: dropDown 0.4s ease-in forwards; }
         @keyframes dropDown { 0% { transform: translateY(-30px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
@@ -127,6 +125,7 @@
             <div id="combo-display" class="combo-text"></div>
 
             <div class="center-board">
+                <img id="board-image" class="board-image" alt="筆算ボード">
                 <div id="hissan-grid" class="hissan-grid"></div>
             </div>
 
@@ -173,6 +172,7 @@
 
         // --- バトル状態 ---
         let currentStep = 0, scenario = [], heroHp = 3, enemyHp = 0, enemyMaxHp = 0, isGameOver = false;
+        let totalQuestions = 5, solvedQuestions = 0;
         let comboCount = 0, maxCombo = 0, currentEnemy = {};
 
         const enemies = [
@@ -205,40 +205,56 @@
             switchScreen('battle-screen');
             heroHp = 5; 
             comboCount = 0; maxCombo = 0;
+            solvedQuestions = 0;
             isGameOver = false;
             updateHpBar('hero', 100);
             
             currentEnemy = enemies[Math.floor(Math.random() * enemies.length)];
             document.getElementById('enemy-name').innerText = currentEnemy.n;
             document.getElementById('enemy-img').innerText = currentEnemy.s;
-
-            // --- 基礎固め用：必ず1ケタに収まる2桁÷1桁の基本問題を生成 ---
+            nextQuestion();
+        }
+        
+        function nextQuestion() {
+            // --- 基礎固め用：2桁÷1桁（あまりなし）の基本問題を生成 ---
             const a = Math.floor(Math.random() * 4) + 2; // 割る数: 2〜5
-            const maxQ1 = Math.floor(9 / a); // 十の位が9を超えないようにする
-            const q1 = Math.floor(Math.random() * maxQ1) + 1; // 答え(十の位)
-            const maxQ2 = Math.floor(9 / a); // 一の位が9を超えないようにする
-            const q2 = Math.floor(Math.random() * (maxQ2 + 1)); // 答え(一の位): 0も含む
-            
-            const d1 = a * q1; // 割られる数(十の位)
-            const d2 = a * q2; // 割られる数(一の位)
+            const q1 = Math.floor(Math.random() * 4) + 1; // 商の十の位: 1〜4
+            const q2 = Math.floor(Math.random() * (Math.floor(9 / a) + 1)); // 商の一の位: 0〜(9/a)
+            const q = q1 * 10 + q2;
+            const dividend = a * q;
+            const d1 = Math.floor(dividend / 10); // 十の位
+            const d2 = dividend % 10; // 一の位
+            const m1 = d1; // 最初は必ず割り切れる形にして基礎反復
+            const s1 = 0;
+            const d2_down = d2; // 引き算が0なのでそのまま一の位をおろす
+            const m2 = d2; // d2 = a*q2
 
             scenario = [
-                { id: 'q1', ans: q1, type: 'tateru', msg: `${d1}を${a}ずつ分けると何こ？\n(${a}×□=${d1})` },
-                { id: 'm1', ans: d1, type: 'kakeru', msg: `${a} × ${q1} の答えを書こう` },
-                { id: 's1', ans: 0, type: 'hiku', msg: `${d1} - ${d1} は？` },
-                { id: 'd2_down', ans: d2, type: 'orosu', msg: `となりの ${d2} をそのままおろす` },
-                { id: 'q2', ans: q2, type: 'tateru', msg: `のこりの${d2}を${a}ずつ分けると？` },
-                { id: 'm2', ans: d2, type: 'kakeru', msg: `${a} × ${q2} の答えを書こう` },
-                { id: 's2', ans: 0, type: 'hiku', msg: `さいごの引き算！` }
+                { id: 'q1', ans: q1, type: 'tateru', msg: `${d1}を${a}でわるといくつ？（商の十の位）` },
+                { id: 'm1', ans: m1, type: 'kakeru', msg: `${a} × ${q1} を書こう` },
+                { id: 's1', ans: s1, type: 'hiku', msg: `${d1} - ${m1} は？` },
+                { id: 'd2_down', ans: d2_down, type: 'orosu', msg: `${d2} をおろして ${d2_down}` },
+                { id: 'q2', ans: q2, type: 'tateru', msg: `${d2_down}を${a}でわると？（商の一の位）` },
+                { id: 'm2', ans: m2, type: 'kakeru', msg: `${a} × ${q2} を書こう` },
+                { id: 's2', ans: 0, type: 'hiku', msg: `${d2_down} - ${m2} は？（あまり）` }
             ];
 
             enemyMaxHp = scenario.length; enemyHp = enemyMaxHp; currentStep = 0;
             updateHpBar('enemy', 100);
-            renderBoard(a, d1, d2);
+            renderBoard(a, d1, d2, dividend);
             updateStep();
         }
 
-        function renderBoard(a, d1, d2) {
+        function renderBoard(a, d1, d2, dividend) {
+            const svg = `
+            <svg xmlns='http://www.w3.org/2000/svg' width='184' height='252'>
+              <rect width='100%' height='100%' fill='#fffdf5'/>
+              <line x1='50' y1='68' x2='176' y2='68' stroke='#333' stroke-width='3'/>
+              <line x1='50' y1='68' x2='50' y2='240' stroke='#333' stroke-width='3'/>
+              <text x='15' y='65' font-size='34' font-family='sans-serif' fill='#222'>${a}</text>
+              <text x='62' y='65' font-size='34' font-family='sans-serif' fill='#222'>${d1}${d2}</text>
+            </svg>`;
+            document.getElementById('board-image').src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
             document.getElementById('hissan-grid').innerHTML = `
                 <div class="cell"></div><div class="cell"></div><div class="cell"><div id="q1" class="input-box"></div></div><div class="cell"><div id="q2" class="input-box"></div></div>
                 <div class="cell">${a}</div><div class="cell bracket"></div><div class="cell border-bottom">${d1}</div><div class="cell border-bottom">${d2}</div>
@@ -247,11 +263,17 @@
                 <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell border-bottom"><div id="m2" class="input-box"></div></div>
                 <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><div id="s2" class="input-box"></div></div>
             `;
+            document.getElementById('msg-text').innerText = `第${solvedQuestions + 1}/${totalQuestions}問: ${dividend} ÷ ${a}`;
         }
 
         function updateStep() {
             if (currentStep >= scenario.length) {
-                setTimeout(showResult, 1000);
+                solvedQuestions++;
+                if (solvedQuestions >= totalQuestions) {
+                    setTimeout(showResult, 700);
+                } else {
+                    setTimeout(nextQuestion, 700);
+                }
                 return;
             }
             const step = scenario[currentStep];
@@ -307,7 +329,7 @@
 
                 if (heroHp <= 0) {
                     isGameOver = true;
-                    document.getElementById('msg-text').innerHTML = "勇者はたおれた...<br>修行をやり直そう（再読み込み）";
+                    document.getElementById('msg-text').innerHTML = "勇者はたおれた...<br>もう一度「修行へ出発！」で再挑戦！";
                 }
             }
         }
@@ -316,7 +338,7 @@
 
         function showResult() {
             switchScreen('result-screen');
-            let earnedExp = 30 + (maxCombo * 5);
+            let earnedExp = (20 * totalQuestions) + (maxCombo * 5);
             playerData.exp += earnedExp;
             document.getElementById('res-exp').innerText = `+${earnedExp} EXP`;
             document.getElementById('res-combo').innerText = `${maxCombo} 回`;
