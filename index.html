@@ -6,20 +6,20 @@
     <title>筆算バトル - 基礎固めRPG</title>
     <style>
         :root {
-            --bg-color: #121212;
-            --panel-bg: rgba(255, 255, 255, 0.95);
+            --bg-color: #eaf6ff;
+            --panel-bg: rgba(255, 255, 255, 0.98);
             --line-color: rgba(52, 152, 219, 0.3);
-            --accent-tateru: #ff9f43;
-            --accent-kakeru: #feca57;
-            --accent-hiku: #ff6b6b;
-            --accent-orosu: #48dbfb;
-            --ui-bg: #222;
+            --accent-tateru: #ff7f50;
+            --accent-kakeru: #f7b731;
+            --accent-hiku: #ff5252;
+            --accent-orosu: #00bcd4;
+            --ui-bg: #ffffff;
         }
 
         body {
             font-family: 'Hiragino Maru Gothic ProN', sans-serif;
             background-color: var(--bg-color);
-            color: white;
+            color: #1f2d3d;
             margin: 0;
             height: 100vh;
             display: flex;
@@ -35,36 +35,40 @@
         /* --- ホーム画面 --- */
         #home-screen {
             justify-content: center; align-items: center;
-            background: radial-gradient(circle, #2c3e50 0%, #000 100%);
+            background: linear-gradient(160deg, #8fd3ff 0%, #c7f0ff 45%, #fff6cc 100%);
             text-align: center; padding: 20px;
         }
-        .title-logo { font-size: 36px; font-weight: bold; color: #f1c40f; text-shadow: 2px 2px 0 #d35400; margin-bottom: 20px; }
-        .status-box { background: rgba(0,0,0,0.6); padding: 20px; border-radius: 15px; border: 2px solid #555; margin-bottom: 30px; width: 80%; max-width: 300px; }
-        .player-title { color: #48dbfb; font-size: 20px; font-weight: bold; margin-bottom: 10px; }
-        .exp-bar-bg { width: 100%; background: #333; height: 15px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
-        .exp-bar-fill { height: 100%; background: #9b59b6; width: 0%; transition: width 0.5s; }
-        .start-btn { background: #e74c3c; color: white; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; box-shadow: 0 5px 0 #c0392b; cursor: pointer; }
+        .title-logo { font-size: 40px; font-weight: bold; color: #ff8c00; text-shadow: 2px 2px 0 #fff; margin-bottom: 20px; }
+        .status-box { background: rgba(255,255,255,0.88); padding: 20px; border-radius: 15px; border: 2px solid #91d5ff; margin-bottom: 30px; width: 80%; max-width: 320px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);}
+        .player-title { color: #0077b6; font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+        .exp-bar-bg { width: 100%; background: #d7efff; height: 15px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        .exp-bar-fill { height: 100%; background: linear-gradient(90deg, #00c6ff, #8e54e9); width: 0%; transition: width 0.5s; }
+        .start-btn { background: linear-gradient(180deg, #ff9f1c, #ff7a00); color: white; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; box-shadow: 0 5px 0 #d96a00; cursor: pointer; }
         .start-btn:active { transform: translateY(5px); box-shadow: none; }
 
         /* --- バトル画面 --- */
-        .step-indicator { display: flex; justify-content: space-around; background: var(--ui-bg); padding: 10px 0; border-bottom: 2px solid #444; z-index: 10; }
+        .step-indicator { display: flex; justify-content: space-around; background: var(--ui-bg); padding: 10px 0; border-bottom: 2px solid #a8ddff; z-index: 10; }
         .step-item { font-weight: bold; font-size: 14px; padding: 5px 12px; border-radius: 20px; opacity: 0.3; transition: all 0.3s; border: 1px solid transparent; }
         .step-item.active { opacity: 1; transform: scale(1.1); border-color: white; box-shadow: 0 0 10px currentColor; }
 
-        .main-game { flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 10px; background: radial-gradient(circle, #2c3e50 0%, #000 100%); position: relative; }
+        .main-game { flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 10px; background: linear-gradient(165deg, #bfe9ff 0%, #e4f8ff 55%, #fff8d5 100%); position: relative; }
         .side-area { width: 80px; text-align: center; display: flex; flex-direction: column; align-items: center; z-index: 5; }
         .char-sprite { font-size: 50px; transition: transform 0.2s; }
         .hp-bar-v { width: 12px; height: 120px; background: #333; border: 1px solid #fff; border-radius: 6px; position: relative; overflow: hidden; margin-top: 10px; }
         .hp-fill-v { position: absolute; bottom: 0; width: 100%; transition: height 0.3s ease-out; }
 
-        .center-board { background: var(--panel-bg); border-radius: 15px; padding: 20px; box-shadow: 0 0 30px rgba(255,255,255,0.1); color: #333; z-index: 5; position: relative; }
-        .board-image { width: 184px; height: 252px; object-fit: contain; display: block; border-radius: 8px; }
-        .hissan-grid { display: grid; grid-template-columns: repeat(4, 46px); grid-auto-rows: 42px; position: absolute; top: 20px; left: 20px; }
-        .cell { display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; position: relative; }
-        .border-bottom { border-bottom: 3px solid #333; }
-        .bracket { border-left: 3px solid #333; border-top: 3px solid #333; border-top-left-radius: 10px; margin-top: 15px; height: 25px; }
+        .center-board { background: var(--panel-bg); border-radius: 15px; padding: 14px; box-shadow: 0 0 30px rgba(255,255,255,0.1); color: #333; z-index: 5; position: relative; }
+        .hissan-grid {
+            display: grid; grid-template-columns: 38px 58px 58px; grid-template-rows: repeat(6, 52px);
+            width: 154px; height: 312px; position: relative;
+            background-image: linear-gradient(#7fb3d1 1px, transparent 1px), linear-gradient(90deg, #7fb3d1 1px, transparent 1px);
+            background-size: 100% 52px, 58px 100%;
+        }
+        .cell { display: flex; align-items: center; justify-content: center; font-size: 52px; font-weight: 500; position: relative; }
+        .wari-line { grid-column: 2 / 4; grid-row: 2; border-top: 4px solid #111; align-self: start; margin-top: 1px; }
+        .wari-bracket { grid-column: 2; grid-row: 2; font-size: 66px; align-self: start; justify-self: start; transform: translate(-16px, -20px); line-height: 1; }
 
-        .input-box { width: 36px; height: 36px; border: 2px dashed #bbb; border-radius: 8px; text-align: center; line-height: 36px; background: #fff; }
+        .input-box { width: 56px; height: 40px; border: 2px dashed #bbb; border-radius: 8px; text-align: center; line-height: 40px; background: #fff; font-size: 30px; }
         .input-box.active { border: 3px solid #e74c3c; background: rgba(231, 76, 60, 0.15); animation: pulse 0.6s infinite alternate; }
         .input-box.correct { border: none; color: #333; }
         .board-caption { margin-top: 10px; font-size: 12px; color: #555; text-align: center; }
@@ -79,8 +83,8 @@
 
         .msg-overlay { position: absolute; top: 15px; width: 100%; text-align: center; font-size: 16px; font-weight: bold; pointer-events: none; text-shadow: 2px 2px 4px #000; z-index: 10; }
 
-        .controls { background: #1a1a1a; padding: 10px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding-bottom: env(safe-area-inset-bottom, 20px); }
-        .btn { height: 60px; background: #eee; border: none; border-radius: 10px; font-size: 24px; font-weight: bold; color: #333; box-shadow: 0 4px 0 #999; cursor: pointer; }
+        .controls { background: #ffffff; padding: 10px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding-bottom: env(safe-area-inset-bottom, 20px); border-top: 2px solid #a8ddff; }
+        .btn { height: 60px; background: linear-gradient(180deg, #fff, #e9f7ff); border: 1px solid #9ed7ff; border-radius: 12px; font-size: 24px; font-weight: bold; color: #245; box-shadow: 0 4px 0 #9ac4dd; cursor: pointer; }
         .btn:active { transform: translateY(4px); box-shadow: none; }
         
         .screen-red { position: fixed; inset:0; background: rgba(255,0,0,0.4); opacity:0; pointer-events:none; transition: opacity 0.2s; z-index: 100; }
@@ -88,21 +92,21 @@
         @keyframes shakeAnim { 0%, 100% {transform:translateX(0);} 25% {transform:translateX(-10px) rotate(-2deg);} 75% {transform:translateX(10px) rotate(2deg);} }
 
         /* --- リザルト画面 --- */
-        #result-screen { justify-content: center; align-items: center; background: rgba(0,0,0,0.9); text-align: center; z-index: 200; position: absolute; top:0; left:0; }
-        .result-box { background: #2c3e50; padding: 30px; border-radius: 15px; border: 2px solid #f1c40f; }
+        #result-screen { justify-content: center; align-items: center; background: rgba(125, 201, 255, 0.45); text-align: center; z-index: 200; position: absolute; top:0; left:0; }
+        .result-box { background: #ffffff; padding: 30px; border-radius: 15px; border: 2px solid #ffc44d; color: #234; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
     </style>
 </head>
 <body>
 
     <div id="home-screen" class="screen active">
-        <div class="title-logo">筆算バトル<br><span style="font-size: 18px; color: white;">〜めざせ！反復の鬼〜</span></div>
+        <div class="title-logo">🌈 筆算アドベンチャー 🌈<br><span style="font-size: 18px; color: #245;">〜たのしく計算マスター！〜</span></div>
         <div class="status-box">
             <div id="display-title" class="player-title">みならい勇者</div>
             <div>プレイヤーLv: <span id="display-level">1</span></div>
             <div style="font-size: 12px; margin-top: 10px; text-align: left;">次のレベルまで</div>
             <div class="exp-bar-bg"><div id="display-exp" class="exp-bar-fill"></div></div>
         </div>
-        <button class="start-btn" onclick="startBattle()">修行へ出発！</button>
+        <button class="start-btn" onclick="startBattle()">スタート！</button>
     </div>
 
     <div id="battle-screen" class="screen">
@@ -125,7 +129,6 @@
             <div id="combo-display" class="combo-text"></div>
 
             <div class="center-board">
-                <img id="board-image" class="board-image" alt="筆算ボード">
                 <div id="hissan-grid" class="hissan-grid"></div>
             </div>
 
@@ -147,12 +150,13 @@
             <button class="btn" onclick="inputNum(8)">8</button>
             <button class="btn" onclick="inputNum(9)">9</button>
             <button class="btn" onclick="inputNum(0)">0</button>
+            <button class="btn" onclick="deleteNum()">←</button>
         </div>
     </div>
 
     <div id="result-screen" class="screen">
         <div class="result-box">
-            <h2 style="color: #f1c40f;">修行クリア！</h2>
+            <h2 style="color: #ff9800;">ステージクリア！🎉</h2>
             <p>獲得経験値: <span id="res-exp" style="font-size:24px; font-weight:bold;">+20</span></p>
             <p>最大コンボ: <span id="res-combo"></span></p>
             <button class="start-btn" style="margin-top: 20px; font-size: 18px;" onclick="returnHome()">ホームへ戻る</button>
@@ -172,8 +176,10 @@
 
         // --- バトル状態 ---
         let currentStep = 0, scenario = [], heroHp = 3, enemyHp = 0, enemyMaxHp = 0, isGameOver = false;
+        const HERO_MAX_HP = 10;
         let totalQuestions = 5, solvedQuestions = 0;
         let comboCount = 0, maxCombo = 0, currentEnemy = {};
+        let inputBuffer = "";
 
         const enemies = [
             { n: "わるスライム", s: "💧", trait: "normal" },
@@ -203,7 +209,7 @@
         // --- バトルロジック ---
         function startBattle() {
             switchScreen('battle-screen');
-            heroHp = 5; 
+            heroHp = HERO_MAX_HP;
             comboCount = 0; maxCombo = 0;
             solvedQuestions = 0;
             isGameOver = false;
@@ -214,29 +220,33 @@
             document.getElementById('enemy-img').innerText = currentEnemy.s;
             nextQuestion();
         }
-        
+
+        function generateScenario() {
+            const a = Math.floor(Math.random() * 8) + 2; // 割る数: 2〜9
+            const d1 = Math.floor(Math.random() * (9 - a + 1)) + a; // 十の位は必ず割れる開始
+            const d2 = Math.floor(Math.random() * 10);
+            const dividend = d1 * 10 + d2;
+            const q1 = Math.floor(d1 / a);
+            const m1 = a * q1;
+            const s1 = d1 - m1;
+            const d2_down = s1 * 10 + d2;
+            const q2 = Math.floor(d2_down / a);
+            const m2 = a * q2;
+            const s2 = d2_down - m2;
+            return { a, d1, d2, dividend, q1, m1, s1, d2_down, q2, m2, s2 };
+        }
+
         function nextQuestion() {
-            // --- 基礎固め用：2桁÷1桁（あまりなし）の基本問題を生成 ---
-            const a = Math.floor(Math.random() * 4) + 2; // 割る数: 2〜5
-            const q1 = Math.floor(Math.random() * 4) + 1; // 商の十の位: 1〜4
-            const q2 = Math.floor(Math.random() * (Math.floor(9 / a) + 1)); // 商の一の位: 0〜(9/a)
-            const q = q1 * 10 + q2;
-            const dividend = a * q;
-            const d1 = Math.floor(dividend / 10); // 十の位
-            const d2 = dividend % 10; // 一の位
-            const m1 = d1; // 最初は必ず割り切れる形にして基礎反復
-            const s1 = 0;
-            const d2_down = d2; // 引き算が0なのでそのまま一の位をおろす
-            const m2 = d2; // d2 = a*q2
+            const { a, d1, d2, dividend, q1, m1, s1, d2_down, q2, m2, s2 } = generateScenario();
 
             scenario = [
-                { id: 'q1', ans: q1, type: 'tateru', msg: `${d1}を${a}でわるといくつ？（商の十の位）` },
-                { id: 'm1', ans: m1, type: 'kakeru', msg: `${a} × ${q1} を書こう` },
-                { id: 's1', ans: s1, type: 'hiku', msg: `${d1} - ${m1} は？` },
-                { id: 'd2_down', ans: d2_down, type: 'orosu', msg: `${d2} をおろして ${d2_down}` },
-                { id: 'q2', ans: q2, type: 'tateru', msg: `${d2_down}を${a}でわると？（商の一の位）` },
-                { id: 'm2', ans: m2, type: 'kakeru', msg: `${a} × ${q2} を書こう` },
-                { id: 's2', ans: 0, type: 'hiku', msg: `${d2_down} - ${m2} は？（あまり）` }
+                { id: 'q1', ans: String(q1), type: 'tateru', msg: `${d1}を${a}でわるといくつ？（商の十の位）` },
+                { id: 'm1', ans: String(m1), type: 'kakeru', msg: `${a} × ${q1} を書こう` },
+                { id: 's1', ans: String(s1), type: 'hiku', msg: `${d1} - ${m1} は？` },
+                { id: 'd2_down', ans: String(d2_down), type: 'orosu', msg: `${d2} をおろして ${d2_down}` },
+                { id: 'q2', ans: String(q2), type: 'tateru', msg: `${d2_down}を${a}でわると？（商の一の位）` },
+                { id: 'm2', ans: String(m2), type: 'kakeru', msg: `${a} × ${q2} を書こう` },
+                { id: 's2', ans: String(s2), type: 'hiku', msg: `${d2_down} - ${m2} は？（あまり）` }
             ];
 
             enemyMaxHp = scenario.length; enemyHp = enemyMaxHp; currentStep = 0;
@@ -246,22 +256,14 @@
         }
 
         function renderBoard(a, d1, d2, dividend) {
-            const svg = `
-            <svg xmlns='http://www.w3.org/2000/svg' width='184' height='252'>
-              <rect width='100%' height='100%' fill='#fffdf5'/>
-              <line x1='50' y1='68' x2='176' y2='68' stroke='#333' stroke-width='3'/>
-              <line x1='50' y1='68' x2='50' y2='240' stroke='#333' stroke-width='3'/>
-              <text x='15' y='65' font-size='34' font-family='sans-serif' fill='#222'>${a}</text>
-              <text x='62' y='65' font-size='34' font-family='sans-serif' fill='#222'>${d1}${d2}</text>
-            </svg>`;
-            document.getElementById('board-image').src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
             document.getElementById('hissan-grid').innerHTML = `
-                <div class="cell"></div><div class="cell"></div><div class="cell"><div id="q1" class="input-box"></div></div><div class="cell"><div id="q2" class="input-box"></div></div>
-                <div class="cell">${a}</div><div class="cell bracket"></div><div class="cell border-bottom">${d1}</div><div class="cell border-bottom">${d2}</div>
-                <div class="cell"></div><div class="cell"></div><div class="cell border-bottom"><div id="m1" class="input-box"></div></div><div class="cell"></div>
-                <div class="cell"></div><div class="cell"></div><div class="cell"><div id="s1" class="input-box"></div></div><div class="cell"><div id="d2_down" class="input-box"></div></div>
-                <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell border-bottom"><div id="m2" class="input-box"></div></div>
-                <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><div id="s2" class="input-box"></div></div>
+                <div class="cell"></div><div class="cell"><div id="q1" class="input-box"></div></div><div class="cell"><div id="q2" class="input-box"></div></div>
+                <div class="cell">${a}</div><div class="cell">${d1}</div><div class="cell">${d2}</div>
+                <div class="cell"></div><div class="cell"><div id="m1" class="input-box"></div></div><div class="cell"></div>
+                <div class="cell"></div><div class="cell"><div id="s1" class="input-box"></div></div><div class="cell"><div id="d2_down" class="input-box"></div></div>
+                <div class="cell"></div><div class="cell"><div id="m2" class="input-box"></div></div><div class="cell"></div>
+                <div class="cell"></div><div class="cell"><div id="s2" class="input-box"></div></div><div class="cell"></div>
+                <div class="wari-line"></div><div class="cell wari-bracket">)</div>
             `;
             document.getElementById('msg-text').innerText = `第${solvedQuestions + 1}/${totalQuestions}問: ${dividend} ÷ ${a}`;
         }
@@ -277,6 +279,7 @@
                 return;
             }
             const step = scenario[currentStep];
+            inputBuffer = "";
             document.querySelectorAll('.input-box').forEach(el => el.classList.remove('active'));
             document.getElementById(step.id).classList.add('active');
             document.getElementById('msg-text').innerText = step.msg;
@@ -289,12 +292,16 @@
             if (isGameOver || currentStep >= scenario.length) return;
             const step = scenario[currentStep];
             const cell = document.getElementById(step.id);
+            inputBuffer += String(num);
+            if (inputBuffer.length > step.ans.length) inputBuffer = inputBuffer.slice(1);
+            cell.innerText = inputBuffer;
+            if (inputBuffer.length < step.ans.length) return;
 
-            if (num === step.ans) {
+            if (inputBuffer === step.ans) {
                 comboCount++;
                 if(comboCount > maxCombo) maxCombo = comboCount;
                 
-                cell.innerText = num; cell.className = "cell input-box correct";
+                cell.className = "cell input-box correct";
                 if(step.type === 'orosu') cell.classList.add('drop-anim');
                 
                 if(comboCount >= 2) {
@@ -312,11 +319,11 @@
 
             } else {
                 comboCount = 0;
-                let damage = currentEnemy.trait === "double_damage" ? 2 : 1;
+                let damage = currentEnemy.trait === "double_damage" ? 1 : 0.5;
                 heroHp -= damage;
-                updateHpBar('hero', (heroHp / 5) * 100);
+                updateHpBar('hero', (heroHp / HERO_MAX_HP) * 100);
 
-                if (Math.abs(num - step.ans) === 1) {
+                if (Math.abs(Number(inputBuffer) - Number(step.ans)) === 1) {
                     document.getElementById('msg-text').innerText = "おしい！あと少しずれてるよ！";
                 } else {
                     document.getElementById('msg-text').innerText = "❌ ミス！ダメージを受けた！";
@@ -331,7 +338,15 @@
                     isGameOver = true;
                     document.getElementById('msg-text').innerHTML = "勇者はたおれた...<br>もう一度「修行へ出発！」で再挑戦！";
                 }
+                inputBuffer = "";
+                cell.innerText = "";
             }
+        }
+        function deleteNum() {
+            if (isGameOver || currentStep >= scenario.length) return;
+            const step = scenario[currentStep];
+            inputBuffer = inputBuffer.slice(0, -1);
+            document.getElementById(step.id).innerText = inputBuffer;
         }
 
         function updateHpBar(who, pct) { document.getElementById(`${who}-hp`).style.height = Math.max(0, pct) + "%"; }
@@ -349,7 +364,19 @@
             switchScreen('home-screen');
         }
 
+        function runGeneratorSanityCheck() {
+            for (let i = 0; i < 200; i++) {
+                const g = generateScenario();
+                if (g.m1 + g.s1 !== g.d1) return console.warn("Generator check failed at step1", g);
+                if (g.q1 < 1) return console.warn("Generator check failed: q1", g);
+                if (g.m2 + g.s2 !== g.d2_down) return console.warn("Generator check failed at step2", g);
+                if (g.s2 < 0 || g.s2 >= g.a) return console.warn("Generator remainder out of range", g);
+            }
+            console.info("Generator sanity check: OK (200 cases)");
+        }
+
         // 初期化
+        runGeneratorSanityCheck();
         updateHomeUI();
     </script>
 </body>
