@@ -37,17 +37,17 @@
   (()=>{
     const $=s=>document.querySelector(s), $=s=>[...document.querySelectorAll(s)];
     const BADGES=[
-      {id:'first-step',slug:'first-step',name:'はじめの一歩',text:'最初の一問に正解'},
-      {id:'calculation',slug:'calculation',name:'計算マスター',text:'バトルをクリア'},
-      {id:'accuracy',slug:'accuracy',name:'正確無比',text:'ミスなしでクリア'},
-      {id:'combo',slug:'combo',name:'コンボ',text:'5問連続正解'},
-      {id:'speed',slug:'speed',name:'スピードスター',text:'10ステップ連続正解'},
-      {id:'practice-master',slug:'practice-master',name:'れんしゅう名人',text:'3バトルクリア'},
-      {id:'mastery',slug:'mastery',name:'マスター',text:'3つのレベルをクリア'}
+      {id:'first-step',folder:'common',slug:'first-step',name:'はじめの一歩',text:'最初の一問に正解'},
+      {id:'calculation',folder:'math',slug:'calculation',name:'計算マスター',text:'バトルをクリア'},
+      {id:'accuracy',folder:'common',slug:'accuracy',name:'正確無比',text:'ミスなしでクリア'},
+      {id:'combo',folder:'common',slug:'combo',name:'コンボ',text:'5問連続正解'},
+      {id:'speed',folder:'common',slug:'speed',name:'スピードスター',text:'10ステップ連続正解'},
+      {id:'practice-master',folder:'common',slug:'practice-master',name:'れんしゅう名人',text:'3バトルクリア'},
+      {id:'mastery',folder:'common',slug:'mastery',name:'マスター',text:'3つのレベルをクリア'}
     ];
     const BADGE_ROOT='https://tt-sensei.github.io/edu-assets/assets/badges/';
     function badgeStore(){return JSON.parse(localStorage.getItem('warizanBattleBadges')||'{"earned":{},"levels":{}}')}
-    function renderBadges(){const d=badgeStore(),grid=$('#badgeGrid');if(!grid)return;grid.innerHTML=BADGES.map(b=>{const on=!!d.earned[b.id];return `<div class="badge-item ${on?'':'locked'}"><img src="${BADGE_ROOT+(b.slug==='calculation'||b.slug==='accuracy'||b.slug==='combo'||b.slug==='speed'||b.slug==='mastery'?'common/':'common/')+b.slug+'/badge.png'}" alt="${b.name}"><span>${b.name}</span>${on?'':'<small style="display:block;color:#9aa7b2;font-size:9px">🔒 '+b.text+'</small>'}</div>`}).join('')}
+    function renderBadges(){const d=badgeStore(),grid=$('#badgeGrid');if(!grid)return;grid.innerHTML=BADGES.map(b=>{const on=!!d.earned[b.id];return `<div class="badge-item ${on?'':'locked'}"><img src="${BADGE_ROOT+b.folder+'/'+b.slug+'/badge.png'}" alt="${b.name}"><span>${b.name}</span>${on?'':'<small style="display:block;color:#9aa7b2;font-size:9px">🔒 '+b.text+'</small>'}</div>`}).join('')}
     function awardBadge(id){const d=badgeStore();if(d.earned[id])return;d.earned[id]=Date.now();localStorage.setItem('warizanBattleBadges',JSON.stringify(d));const b=BADGES.find(x=>x.id===id);renderBadges();if(b)showToast(`🏆 バッジゲット！ ${b.name}`)}
 
     const state={level:1,question:0,total:5,steps:[],index:0,answer:'',combo:0,maxCombo:0,misses:0,hero:100,enemy:100,model:null};
