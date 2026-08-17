@@ -13,21 +13,22 @@
     .keys{background:#edf3f8;padding:8px max(10px,env(safe-area-inset-right)) calc(9px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.key{border:0;border-radius:12px;background:#fff;color:#263d51;height:50px;font-size:22px;box-shadow:0 3px 0 #afc5d5}.key.enter{background:#39b477;color:#fff}.key.erase{background:#a4b3bf;color:#fff}.toast{position:fixed;top:116px;left:50%;transform:translateX(-50%);z-index:10;padding:10px 18px;border-radius:999px;background:#1f3650;color:#fff;font-weight:800;opacity:0;transition:.2s;pointer-events:none}.toast.show{opacity:1}.result{position:fixed;inset:0;background:#18334bc9;display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.result.show{display:flex}.result-card{background:#fffdf8;text-align:center;border-radius:22px;padding:28px;max-width:350px;width:100%;box-shadow:0 10px 40px #0005}.result h2{margin-top:0;color:#e27d22}
     @media(max-width:430px){.level-grid{gap:7px}.level-card{padding:12px 4px;min-height:122px}.level-card b{font-size:15px}.battle{grid-template-columns:48px minmax(0,1fr) 48px}.keys{grid-template-columns:repeat(6,1fr);gap:5px}.key{height:46px;font-size:20px}}
   
-     /* 横画面では、左に筆算・右に問題文と操作をまとめて表示 */
+     /* 横画面では、左に筆算・右に操作パネルを表示 */
      @media (orientation:landscape) and (min-width:760px){
-       #game{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,32vw);grid-template-rows:auto auto minmax(0,1fr) auto auto;overflow:hidden;min-height:100svh}
+       #game{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,32vw);grid-template-rows:auto auto minmax(0,1fr);overflow:hidden;min-height:100svh}
        #game>.top{grid-column:1 / -1;grid-row:1}
        #game>.steps{grid-column:1 / -1;grid-row:2}
-       #game>.battle{grid-column:1;grid-row:3 / 6;min-width:0;overflow:auto}
-       #game>.msg{grid-column:2;grid-row:3;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px 16px;border-top:0;border-left:2px solid #c5dfef}
-       #game>.answer{grid-column:2;grid-row:4;flex-wrap:wrap;padding:10px 14px;border-top:1px solid #dce7ef;border-left:2px solid #c5dfef}
-       #game>.keys{grid-column:2;grid-row:5;align-self:stretch;grid-template-columns:repeat(4,1fr);padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-left:2px solid #c5dfef}
-       #game>.keys .key{height:clamp(42px,7vh,58px)}
-       #game>.toast{top:74px}
+       #game>.battle{grid-column:1;grid-row:3;min-width:0;overflow:auto}
+       #game>.side-panel{grid-column:2;grid-row:3;min-width:0;min-height:0;display:flex;flex-direction:column;border-left:2px solid #c5dfef;background:#fff;overflow:auto}
+       .side-panel>.msg{flex:1;min-height:90px;display:flex;align-items:center;justify-content:center;border-top:0;padding:12px 16px}
+       .side-panel>.answer{flex-wrap:wrap;padding:10px 14px;border-top:1px solid #dce7ef}
+       .side-panel>.keys{grid-template-columns:repeat(4,1fr);padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid #dce7ef}
+       .side-panel>.keys .key{height:clamp(42px,7vh,58px)}
        .keyboard-note{display:block;width:100%;font-size:11px;color:#6e7e8c;text-align:center;margin-top:5px}
      }
+     .side-panel{display:contents}
      @media (orientation:portrait), (max-width:759px){.keyboard-note{display:none}}
-</style>
+     </style>
 </head>
 <body>
   <main id="home" class="screen active"><div class="home-inner">
@@ -44,8 +45,7 @@
     <div class="top"><button id="homeBtn" class="back">← もどる</button><span class="progress" id="progress"></span><span class="stars" id="combo">⚡ 0 コンボ</span></div>
     <div class="steps"><span class="step-chip" data-kind="tateru">① たてる</span><span class="step-chip" data-kind="kakeru">② かける</span><span class="step-chip" data-kind="hiku">③ ひく</span><span class="step-chip" data-kind="orosu">④ おろす</span></div>
     <section class="battle"><aside class="fighter hero">🧑‍🚀<div class="hp"><i id="heroHp"></i></div><small>きみ</small></aside><div class="board-card"><div id="board" class="board"></div></div><aside class="fighter">👾<div class="hp"><i id="enemyHp"></i></div><small id="enemyName">わりザウルス</small></aside></section>
-    <div id="message" class="msg"></div><div class="answer"><span class="answer-label">こたえ</span><div id="answer" class="answer-box">　</div><button id="hint" class="soft">ヒント</button><small class="keyboard-note">数字キー：入力　Backspace：けす　Enter：決定</small></div>
-    <div class="keys" id="keys"></div><div id="toast" class="toast"></div>
+    <div class="side-panel"><div id="message" class="msg"></div><div class="answer"><span class="answer-label">こたえ</span><div id="answer" class="answer-box">　</div><button id="hint" class="soft">ヒント</button><small class="keyboard-note">数字キー：入力　Backspace：けす　Enter：決定</small></div><div class="keys" id="keys"></div></div><div id="toast" class="toast"></div>
   </main>
   <div id="result" class="result"><div class="result-card"><h2>バトルクリア！🎉</h2><p id="resultText"></p><button id="again" class="start" style="font-size:18px;padding:13px 30px">つぎのバトルへ</button><br><button id="resultHome" class="soft" style="margin-top:12px">ホームへ</button></div></div>
   <script>
@@ -86,7 +86,7 @@
     function advance(){state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);if(state.maxCombo>=5)awardBadge('combo');if(state.maxCombo>=10)awardBadge('speed');if(state.index===0)awardBadge('first-step');$('#combo').textContent=`⚡ ${state.combo} コンボ`;state.index++;state.answer='';state.enemy=Math.max(0,state.enemy-100/state.steps.length);$('#enemyHp').style.width=state.enemy+'%';if(state.index>=state.steps.length){state.question++;if(state.question>=state.total){const old=JSON.parse(localStorage.getItem('warizanBattleV2')||'{"best":0,"clears":0}');localStorage.setItem('warizanBattleV2',JSON.stringify({best:Math.max(old.best||0,state.maxCombo),clears:(old.clears||0)+1}));const bd=badgeStore();bd.levels[state.level]=true;localStorage.setItem('warizanBattleBadges',JSON.stringify(bd));awardBadge('calculation');if(state.misses===0)awardBadge('accuracy');if((old.clears||0)+1>=3)awardBadge('practice-master');if(Object.keys({...bd.levels,[state.level]:true}).length>=3)awardBadge('mastery');record();$('#resultText').textContent=`最高 ${state.maxCombo} コンボ！　筆算の4つのステップを最後まで進められたね。`;$('#result').classList.add('show');return}showToast('ナイス！ 次のモンスターだ！');setTimeout(startQuestion,500);return}render();setMessage()}
     function enter(){const s=state.steps[state.index];if(!s)return;if(state.answer===s.answer){$('#answer').classList.add('ok');setTimeout(advance,180)}else wrong()}
     function hint(){const s=state.steps[state.index],m=state.model;if(s.kind==='tateru')showToast(`「${s.stage?m.stages[s.stage].current:m.stages[0].current} の中に ${m.divisor} がいくつ」を考えよう。`);else if(s.kind==='kakeru')showToast(`わる数 ${m.divisor} と、商をかけるよ。`);else if(s.kind==='hiku')showToast('上の数から、かけた答えをひくよ。');else showToast('わられる数の、次の数字を下へおろすよ。')}
-    $('#keys').innerHTML=[1,2,3,4,5,6,7,8,9,'けす',0,'決定'].map(n=>`<button class="key ${n==='決定'?'enter':n==='けす'?'erase':''}" data-key="${n}">${n==='けす'?'⌫':n==='決定'?'✓':n}</button>`).join('');$('#keys').addEventListener('click',e=>{const k=e.target.dataset.key;if(!k)return;if(k==='決定')enter();else if(k==='けす'){state.answer=state.answer.slice(0,-1);setMessage()}else{state.answer=(state.answer+k).slice(-3);setMessage()}});$('#hint').onclick=hint;document.addEventListener('keydown',e=>{if(!$('#game').classList.contains('active')||$('#result').classList.contains('show'))return;if(/^\\d$/.test(e.key)){state.answer=(state.answer+e.key).slice(-3);setMessage();e.preventDefault();}else if(e.key==='Backspace'){state.answer=state.answer.slice(0,-1);setMessage();e.preventDefault();}else if(e.key==='Enter'){enter();e.preventDefault();}});$('#start').onclick=startBattle;$('#again').onclick=startBattle;$('#homeBtn').onclick=()=>{$('#game').classList.remove('active');$('#home').classList.add('active')};$('#resultHome').onclick=()=>{$('#result').classList.remove('show');$('#game').classList.remove('active');$('#home').classList.add('active')};$('#levels').onclick=e=>{const b=e.target.closest('[data-level]');if(!b)return;state.level=Number(b.dataset.level);$$('.level-card').forEach(x=>x.classList.toggle('selected',x===b))};record();renderBadges();
+    $('#keys').innerHTML=[1,2,3,4,5,6,7,8,9,'けす',0,'決定'].map(n=>`<button class="key ${n==='決定'?'enter':n==='けす'?'erase':''}" data-key="${n}">${n==='けす'?'⌫':n==='決定'?'✓':n}</button>`).join('');$('#keys').addEventListener('click',e=>{const k=e.target.dataset.key;if(!k)return;if(k==='決定')enter();else if(k==='けす'){state.answer=state.answer.slice(0,-1);setMessage()}else{state.answer=(state.answer+k).slice(-3);setMessage()}});$('#hint').onclick=hint;document.addEventListener('keydown',e=>{if(!$('#game').classList.contains('active')||$('#result').classList.contains('show'))return;if(/^\d$/.test(e.key)){state.answer=(state.answer+e.key).slice(-3);setMessage();e.preventDefault();}else if(e.key==='Backspace'){state.answer=state.answer.slice(0,-1);setMessage();e.preventDefault();}else if(e.key==='Enter'){enter();e.preventDefault();}});$('#start').onclick=startBattle;$('#again').onclick=startBattle;$('#homeBtn').onclick=()=>{$('#game').classList.remove('active');$('#home').classList.add('active')};$('#resultHome').onclick=()=>{$('#result').classList.remove('show');$('#game').classList.remove('active');$('#home').classList.add('active')};$('#levels').onclick=e=>{const b=e.target.closest('[data-level]');if(!b)return;state.level=Number(b.dataset.level);$$('.level-card').forEach(x=>x.classList.toggle('selected',x===b))};record();renderBadges();
   })();
   </script>
 </body></html>
