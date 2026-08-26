@@ -13,6 +13,7 @@
 @media(max-width:500px){.party{height:90px}.party img{height:80px}.level-grid{gap:6px}.level-card{padding:10px 4px;min-height:118px}.level-card b{font-size:15px}.battle{grid-template-columns:62px minmax(0,1fr) 68px;padding:5px}.fighter img{height:100px}.fighter.attack img{transform:scale(1.28)}.fighter.attack-burst img{transform:scale(1.42) translateX(6px)}.fighter.special img{transform:scale(1.34)}.fighter.special-burst img{transform:scale(1.50) translateX(7px)}.keys{gap:5px}.key{height:45px;font-size:19px}}
 @media(orientation:landscape) and (min-width:760px){#game{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,32vw);grid-template-rows:auto auto minmax(0,1fr);min-height:100svh}#game>.top{grid-column:1/-1}#game>.steps{grid-column:1/-1}#game>.battle{grid-column:1;grid-row:3;min-width:0;overflow:auto}#game>.side-panel{grid-column:2;grid-row:3;display:flex;flex-direction:column;border-left:2px solid #c5dfef;background:#fff;overflow:auto}.side-panel>.msg{flex:1;display:flex;align-items:center;justify-content:center;border-top:0}.side-panel>.answer{flex-wrap:wrap}.side-panel>.keys{grid-template-columns:repeat(4,1fr)}.fighter img{height:clamp(120px,27vh,210px)}.fighter.attack img{transform:scale(1.22)}.fighter.attack-burst img{transform:scale(1.38) translateX(9px)}.fighter.special img{transform:scale(1.30)}.fighter.special-burst img{transform:scale(1.48) translateX(11px)}}
 </style>
+  <link rel="stylesheet" href="sticker-effects.css">
 </head>
 <body>
 <main id="home" class="screen active"><div class="home-inner">
@@ -40,11 +41,13 @@ const WORLDS={1:{bg:'backgrounds/forest.webp',enemies:[['森ぷる','monsters/za
 const state={level:1,question:0,total:5,steps:[],index:0,answer:'',combo:0,maxCombo:0,misses:0,hero:100,enemy:100,model:null,heroData:null,attackTimer:null};
 let selectedHero=Number(localStorage.getItem('warizanSelectedHero')||0);
 const allMonsters=Object.values(WORLDS).flatMap(w=>w.enemies);
+const STICKER_EFFECTS=['holo','rainbow','glitter','neon','aurora','prism'];
+function stickerEffect(){return STICKER_EFFECTS[Math.floor(Math.random()*STICKER_EFFECTS.length)]}
 function monsterKey(e){return e[1]}
 function collection(){return JSON.parse(localStorage.getItem('warizanMonsterBadges')||'{}')}
 function unlockMonster(e){const d=collection(),k=monsterKey(e);d[k]=(d[k]||0)+1;localStorage.setItem('warizanMonsterBadges',JSON.stringify(d))}
 function renderHeroChoices(){const box=$('#heroChoices');if(!box)return;box.innerHTML=HEROES.map((h,i)=>`<button class="hero-choice ${i===selectedHero?'selected':''}" data-hero="${i}"><img src="${ROOT+h.stand}" alt=""><b>${h.name.replace('・','<br>')}</b></button>`).join('')}
-function renderDex(){const d=collection(),found=Object.keys(d).length;$('#dexCount').textContent=`発見 ${found} / ${allMonsters.length} 体　倒した数をバッジに記録中！`;$('#dexGrid').innerHTML=allMonsters.map(e=>{const n=d[monsterKey(e)]||0;return `<article class="badge ${n?'found':''}"><img src="${ROOT+e[1]}" alt=""><b>${n?e[0]:'？？？'}</b><small>${n?`撃破 ${n}回`:'まだ未発見'}</small></article>`}).join('')}
+function renderDex(){const d=collection(),found=Object.keys(d).length;$('#dexCount').textContent=`発見 ${found} / ${allMonsters.length} 体　倒した数をバッジに記録中！`;$('#dexGrid').innerHTML=allMonsters.map(e=>{const n=d[monsterKey(e)]||0;return `<article class="badge ${n?'found sticker-monster-card effect-'+stickerEffect():''}"><img class="${n?'sticker-monster-image':''}" src="${ROOT+e[1]}" alt=""><b>${n?e[0]:'？？？'}</b><small>${n?`撃破 ${n}回`:'まだ未発見'}</small></article>`}).join('')}
 const rnd=n=>Math.floor(Math.random()*n);function record(){const d=JSON.parse(localStorage.getItem('warizanBattleV3')||'{"best":0,"clears":0}');$('#best').textContent=d.best||0;$('#clears').textContent=d.clears||0}
 function makeProblem(){let divisor,quotient,remainder,dividend,need=state.level===1?2:rnd(2)+2;do{divisor=rnd(8)+2;quotient=state.level===3?rnd(80)+20:rnd(80)+10;remainder=state.level===1?0:rnd(divisor);dividend=divisor*quotient+remainder}while(String(dividend).length!==need||String(quotient).length<2||(state.level===3&&!String(quotient).includes('0')));return{dividend,divisor}}
 function stagesOf(dividend,divisor){const digits=[...String(dividend)].map(Number);let acc=0,start=-1,stages=[];for(let i=0;i<digits.length;i++){acc=acc*10+digits[i];if(start<0&&acc<divisor)continue;if(start<0)start=i;const q=Math.floor(acc/divisor),p=q*divisor,r=acc-p;stages.push({end:i,current:acc,q,partial:p,remainder:r});acc=r}return{digits,start,stages}}
