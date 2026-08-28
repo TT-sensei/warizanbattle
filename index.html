@@ -19,7 +19,7 @@
 <main id="home" class="screen active"><div class="home-inner">
 <h1 class="logo">わり算バトル</h1><p class="sub">ファンタジーの世界で「たてる・かける・ひく・おろす」をマスター！</p>
 <div class="party" aria-hidden="true"><img src="https://tt-sensei.github.io/navi-character-/assets/web/fantasy/sora-swordsman.webp"><img src="https://tt-sensei.github.io/navi-character-/assets/web/fantasy/riku-ninja.webp"><img src="https://tt-sensei.github.io/navi-character-/assets/web/fantasy/kai-mage.webp"><img src="https://tt-sensei.github.io/navi-character-/assets/web/fantasy/tsuki-archer.webp"><img src="https://tt-sensei.github.io/navi-character-/assets/web/fantasy/nami-guardian-knight.webp"><img src="https://tt-sensei.github.io/navi-character-/assets/web/fantasy/saku-cleric-healer.webp"></div><section class="hero-select"><h2>いっしょに冒険する仲間をえらぼう</h2><div id="heroChoices" class="hero-choices"></div></section><button id="startHero" class="start-hero">この仲間と冒険</button><br><button id="dexOpen" class="dex-open">📖 モンスター図鑑・バッジ</button><div class="record">🏅 最高コンボ：<span id="best">0</span>　⭐ クリア：<span id="clears">0</span></div>
-<div class="level-grid" id="levels"><button class="level-card selected" data-level="1"><b>🌳 はじめの森</b><small>2けた ÷ 1けた<br>あまりなし<br>雑魚モンスター</small></button><button class="level-card" data-level="2"><b>💎 あまりの洞くつ</b><small>2・3けた ÷ 1けた<br>あまりあり<br>中ボスクラス</small></button><button class="level-card" data-level="3"><b>🏰 名人の遺跡</b><small>3けた ÷ 1けた<br>商に0も出る<br>ドラゴン戦</small></button></div>
+<div class="level-grid" id="levels"><button class="level-card selected" data-level="1"><b>🌳 はじめの森</b><small>2けた ÷ 1けた<br>あまりなし<br>雑魚モンスター</small></button><button class="level-card" data-level="2"><b>💎 あまりの洞くつ</b><small>2・3けた ÷ 1けた<br>あまりあり<br>進化モンスター</small></button><button class="level-card" data-level="3"><b>🏰 名人の遺跡</b><small>3けた ÷ 1けた<br>商に0も出る<br>ボスモンスター</small></button></div>
 <button id="start" class="start">この世界へ</button></div></main><div id="dex" class="modal"><div class="modal-card"><h2>📖 モンスター図鑑</h2><p id="dexCount"></p><div id="dexGrid" class="dex-grid"></div><button id="dexClose" class="modal-close">とじる</button></div></div>
 <main id="game" class="screen"><div class="top"><button id="homeBtn" class="back">← もどる</button><span class="progress" id="progress"></span><span class="stars" id="combo">⚡ 0 コンボ</span><button id="soundToggle" class="soft">🔊</button></div><div class="steps"><span class="step-chip" data-kind="tateru">① たてる</span><span class="step-chip" data-kind="kakeru">② かける</span><span class="step-chip" data-kind="hiku">③ ひく</span><span class="step-chip" data-kind="orosu">④ おろす</span></div>
 <section id="battle" class="battle"><aside id="heroFighter" class="fighter hero"><img id="heroArt" alt="冒険者"><div class="hp"><i id="heroHp"></i></div><small id="heroName">冒険者</small></aside><div class="board-card"><div id="board" class="board"></div></div><aside id="enemyFighter" class="fighter"><img id="enemyArt" alt="モンスター"><div class="hp"><i id="enemyHp"></i></div><small id="enemyName">モンスター</small></aside></section>
@@ -37,7 +37,73 @@ const HEROES=[
 {name:'つき・アーチャー',stand:'tsuki-archer.webp',attack:'attack/tsuki-archer-attack.webp'},
 {name:'なみ・騎士',stand:'nami-guardian-knight.webp',attack:'attack/nami-knight-attack.webp'},
 {name:'さく・僧侶',stand:'saku-cleric-healer.webp',attack:'attack/saku-cleric-attack.webp'}];
-const WORLDS={1:{bg:'backgrounds/forest.webp',enemies:[['森ぷる','monsters/zako/forest-puru.webp'],['どんぐりリーフ','monsters/zako/acorn-leafy.webp'],['こもりん','monsters/zako/komorin-little-night-bat.webp'],['あきいろキノコ','monsters/zako/autumn-mushroom.webp'],['ベリーリーフ','monsters/zako/berry-leafy.webp'],['もふもふフロスト','monsters/zako/ember-frost-pup.webp'],['はっぱリス','monsters/zako/happa-squirrel-leafy.webp'],['ひのこイモリ','monsters/zako/hinoko-ember-newt.webp'],['りんごキノコ','monsters/zako/kinoko-apple-mushroom.webp'],['ころゴーレム','monsters/zako/koro-golem-pebble-golem.webp'],['もふウルフ','monsters/zako/mofu-wolf-frost-pup.webp'],['モスころゴーレム','monsters/zako/moss-pebble-golem.webp'],['よるぽん','monsters/zako/night-snow-puff.webp'],['ぷるん','monsters/zako/purun-little-magic-slime.webp'],['あめコウモリ','monsters/zako/rainy-bat.webp'],['さくらぽん','monsters/zako/sakura-snow-puff.webp'],['すなイモリ','monsters/zako/sand-ember-newt.webp'],['ゆきキノコ','monsters/zako/snow-mushroom.webp']]},2:{bg:'backgrounds/cave.webp',enemies:[['クリスタルゴーレム','monsters/boss/crystal-golem.webp'],['ゆめねこ魔導士','monsters/boss/dream-cat-mage.webp'],['あかつきねこ魔導士','monsters/boss/dawn-cat-mage.webp'],['プリズムゴーレム','monsters/boss/prism-crystal-golem.webp'],['つきかげゴーレム','monsters/boss/moon-crystal-golem.webp'],['森のツノキング','monsters/boss/forest-horn-king.webp'],['こけいろツノキング','monsters/boss/moss-ruin-horn-king.webp'],['フロストクリスタルライオン','monsters/boss/frost-crystal-lion.webp'],['サンダーグリフォン','monsters/boss/thunder-griffon.webp'],['空の遺跡グリフォン','monsters/boss/sky-ruin-griffon.webp'],['たいようグリフォン王','monsters/boss/solar-griffon-king.webp'],['火山イノシシ王','monsters/boss/volcano-boar-king.webp'],['よいやみねこ魔導士','monsters/boss/twilight-cat-mage.webp']]},3:{bg:'backgrounds/ruins.webp',enemies:[['蒼天ドラゴン','monsters/boss/sky-ruin-griffon.webp'],['紅蓮ドラゴン','monsters/boss/flare-leo.webp'],['黄昏フェニックス','monsters/boss/eclipse-shadow-phoenix.webp'],['月光フェニックス','monsters/boss/lumina-moon-phoenix.webp'],['星喰いノクステラ','monsters/boss/noxstella-star-eater.webp']]}};
+const GROUP3_MONSTERS={
+  zako:[
+    ["りんごキノコ","monsters/zako/kinoko-apple-mushroom.webp"],
+    ["もふウルフ","monsters/zako/mofu-wolf-frost-pup.webp"],
+    ["どんぐりリーフ","monsters/zako/acorn-leafy.webp"],
+    ["モスこいしゴーレム","monsters/zako/moss-pebble-golem.webp"],
+    ["スノーキノコ","monsters/zako/snow-mushroom.webp"],
+    ["ベリーリーフ","monsters/zako/berry-leafy.webp"],
+    ["スプリングモスパップ","monsters/zako/spring-moss-pup.webp"],
+    ["タイダルイモリ","monsters/zako/tidal-newt.webp"],
+    ["コーラルバブルクラブ","monsters/zako/coral-bubble-crab.webp"],
+    ["月夜のモス","monsters/zako/moon-moth.webp"],
+    ["ヴァインカメレオン","monsters/zako/vine-chameleon.webp"],
+    ["たそがれフクロウ","monsters/zako/dusk-feather-owl.webp"],
+    ["シャドウクレストフェレット","monsters/zako/shadow-crest-ferret.webp"],
+    ["スプラウトシェルカメ","monsters/zako/sprout-shell-turtle.webp"],
+    ["シャドウクレストリンクス","monsters/zako/shadow-crest-lynx.webp"],
+    ["エンバーウィングレイヴン","monsters/zako/emberwing-raven.webp"],
+    ["プリズムテイルドレイク","monsters/zako/prism-tail-drake.webp"],
+    ["グレイシャークレストホーク","monsters/zako/glacier-crest-hawk.webp"],
+    ["ささやきマスクインプ","monsters/zako/whispering-mask-imp.webp"],
+    ["ルートタングルゴブリン","monsters/zako/root-tangle-goblin.webp"],
+    ["月あかりウィスプ","monsters/zako/moonlit-wisp.webp"],
+    ["ペーパーつる精霊","monsters/zako/paper-crane-spirit.webp"],
+    ["ギアビットねずみ","monsters/zako/gearbit-mouse.webp"]
+  ],
+  zakoEvolved:[
+    ["りんごキノコ・エボル","monsters/zako-evolved/kinoko-apple-mushroom-evolved.webp"],
+    ["もふウルフ・エボル","monsters/zako-evolved/mofu-wolf-frost-pup-evolved.webp"],
+    ["どんぐりリーフ・エボル","monsters/zako-evolved/acorn-leafy-evolved.webp"],
+    ["モスこいしゴーレム・エボル","monsters/zako-evolved/moss-pebble-golem-evolved.webp"],
+    ["スノーキノコ・エボル","monsters/zako-evolved/snow-mushroom-evolved.webp"],
+    ["ベリーリーフ・エボル","monsters/zako-evolved/berry-leafy-evolved.webp"],
+    ["スプリングモスパップ・エボル","monsters/zako-evolved/spring-moss-pup-evolved.webp"],
+    ["タイダルイモリ・エボル","monsters/zako-evolved/tidal-newt-evolved.webp"],
+    ["コーラルバブルクラブ・エボル","monsters/zako-evolved/coral-bubble-crab-evolved.webp"],
+    ["月夜のモス・エボル","monsters/zako-evolved/moon-moth-evolved.webp"],
+    ["ヴァインカメレオン・エボル","monsters/zako-evolved/vine-chameleon-evolved.webp"],
+    ["たそがれフクロウ・エボル","monsters/zako-evolved/dusk-feather-owl-evolved.webp"],
+    ["エンバーウィングレイヴン・エボル","monsters/zako-evolved/emberwing-raven-evolved.webp"],
+    ["グレイシャークレストホーク・エボル","monsters/zako-evolved/glacier-crest-hawk-evolved.webp"],
+    ["月あかりウィスプ・エボル","monsters/zako-evolved/moonlit-wisp-evolved.webp"],
+    ["ペーパーつる精霊・エボル","monsters/zako-evolved/paper-crane-spirit-evolved.webp"],
+    ["プリズムテイルドレイク・エボル","monsters/zako-evolved/prism-tail-drake-evolved.webp"],
+    ["ルートタングルゴブリン・エボル","monsters/zako-evolved/root-tangle-goblin-evolved.webp"],
+    ["シャドウクレストフェレット・エボル","monsters/zako-evolved/shadow-crest-ferret-evolved.webp"],
+    ["シャドウクレストリンクス・エボル","monsters/zako-evolved/shadow-crest-lynx-evolved.webp"],
+    ["スプラウトシェルカメ・エボル","monsters/zako-evolved/sprout-shell-turtle-evolved.webp"],
+    ["ささやきマスクインプ・エボル","monsters/zako-evolved/whispering-mask-imp-evolved.webp"],
+    ["ギアビットねずみ・エボル","monsters/zako-evolved/gearbit-mouse-evolved.webp"]
+  ],
+  boss:[
+    ["クリスタルゴーレム（ボス）","monsters/boss/crystal-golem.webp"],
+    ["黄昏ネコ魔導士（ボス）","monsters/boss/twilight-cat-mage.webp"],
+    ["あかつきネコメイジ","monsters/boss/dawn-cat-mage.webp"],
+    ["タイドスライムキング（ボス）","monsters/boss/tide-slime-king.webp"],
+    ["モス遺跡ホーンキング（ボス）","monsters/boss/moss-ruin-horn-king.webp"],
+    ["ボルケーノイノシシキング（ボス）","monsters/boss/volcano-boar-king.webp"],
+    ["月夜のフェニックス（ボス）","monsters/boss/lumina-moon-phoenix.webp"],
+    ["エクリプスシャドウフェニックス（ボス）","monsters/boss/eclipse-shadow-phoenix.webp"],
+    ["ストームクラウドフクロウキング（ボス）","monsters/boss/stormcloud-owl-king.webp"],
+    ["オーロラアイスモス","monsters/boss/aurora-ice-moth.webp"],
+    ["グルームソーンフォレストタイタン（ボス）","monsters/boss/gloomthorn-forest-titan.webp"],
+    ["ファントムランタンドラゴン（ボス）","monsters/boss/phantom-lantern-dragon.webp"]
+  ]
+};
+const WORLDS={1:{bg:'backgrounds/forest.webp',enemies:GROUP3_MONSTERS.zako},2:{bg:'backgrounds/cave.webp',enemies:GROUP3_MONSTERS.zakoEvolved},3:{bg:'backgrounds/ruins.webp',enemies:GROUP3_MONSTERS.boss}};
 const state={level:1,question:0,total:5,steps:[],index:0,answer:'',combo:0,maxCombo:0,misses:0,hero:100,enemy:100,model:null,heroData:null,attackTimer:null};
 let selectedHero=Number(localStorage.getItem('warizanSelectedHero')||0);
 const allMonsters=Object.values(WORLDS).flatMap(w=>w.enemies);
